@@ -15,6 +15,59 @@ const game = {
 };
 
 
+const SAVE_KEY = "japaLifestyleSave";
+
+// Save the current game to the browser
+function saveGame() {
+    try {
+        localStorage.setItem(
+            SAVE_KEY,
+            JSON.stringify(game)
+        );
+
+        showMessage("Game progress saved!");
+
+    } catch (error) {
+        console.error("Could not save game:", error);
+        showMessage("Unable to save. Check your browser settings.");
+    }
+}
+
+// Load a previous save, if one exists
+function loadGame() {
+    try {
+        const savedGame = localStorage.getItem(SAVE_KEY);
+
+        if (!savedGame) {
+            return false;
+        }
+
+        const parsedGame = JSON.parse(savedGame);
+
+        // Basic validation before restoring the save
+        if (
+            typeof parsedGame !== "object" ||
+            parsedGame === null ||
+            !Number.isFinite(parsedGame.cash) ||
+            !Number.isFinite(parsedGame.energy) ||
+            !locations[parsedGame.currentLocation] ||
+            !Array.isArray(parsedGame.missions) ||
+            !Array.isArray(parsedGame.logs)
+        ) {
+            throw new Error("Invalid save data");
+        }
+
+        // Restore saved values into the existing game object
+        Object.assign(game, parsedGame);
+
+        return true;
+
+    } catch (error) {
+        console.error("Could not load saved game:", error);
+        showMessage("The saved game could not be loaded.");
+        return false;
+    }
+}
 /* =========================
    CITY LOCATIONS
 ========================= */
@@ -850,6 +903,8 @@ function render() {
 
     renderLog();
 
+    // Automatically save after the interface updates
+    saveGame();
 }
 
 
@@ -876,8 +931,10 @@ document.getElementById(
    START GAME
 ========================= */
 
-log(
-    "You arrived in Lagos with ₦25,000. Your Japa story begins."
-);
+const hasSave = loadGame();
+
+if (!hasSave) {
+    log("You arrived in Lagos with ₦25,000. Your Japa story begins.");
+}
 
 render();
