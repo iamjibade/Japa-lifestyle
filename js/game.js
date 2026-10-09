@@ -1,3 +1,142 @@
+```js
+/* =========================
+   CITY THEMES
+========================= */
+
+const cities = {
+    lagos: {
+        name: "Lagos",
+        icon: "🌆",
+        mood: "The Hustle",
+        description: "Bigger dreams, same Naija spirit.",
+        status: "🚌 Traffic: Moderate",
+        mapTitle: "Lagos City Map"
+    },
+
+    abuja: {
+        name: "Abuja",
+        icon: "🏙️",
+        mood: "The Ambition",
+        description: "Think bigger. Build your future.",
+        status: "🏢 The city of opportunity",
+        mapTitle: "Abuja City Map"
+    },
+
+    ibadan: {
+        name: "Ibadan",
+        icon: "🌄",
+        mood: "The Grind",
+        description: "Slow beginnings. Big possibilities.",
+        status: "🤝 Community: Strong",
+        mapTitle: "Ibadan City Map"
+    },
+
+    "port-harcourt": {
+        name: "Port Harcourt",
+        icon: "🌴",
+        mood: "The River City",
+        description: "Find your lane. Make your move.",
+        status: "🌧️ Tropical atmosphere",
+        mapTitle: "Port Harcourt City Map"
+    },
+
+    "benin-city": {
+        name: "Benin City",
+        icon: "🏺",
+        mood: "The Heritage",
+        description: "Rooted in history. Ready for tomorrow.",
+        status: "🏺 Heritage meets hustle",
+        mapTitle: "Benin City Map"
+    },
+
+    onitsha: {
+        name: "Onitsha",
+        icon: "🛍️",
+        mood: "The Marketplace",
+        description: "Business moves. Opportunities multiply.",
+        status: "📦 Trading district",
+        mapTitle: "Onitsha City Map"
+    }
+};
+
+// The city is separate from the neighbourhood.
+game.currentCity = game.currentCity || "lagos";
+
+function renderCityTheme() {
+    const city = cities[game.currentCity] || cities.lagos;
+
+    // Apply the matching CSS theme.
+    document.body.dataset.theme = game.currentCity;
+    document.documentElement.dataset.theme = game.currentCity;
+
+    // Update the city identity.
+    document.getElementById("cityName").textContent = city.name;
+    document.getElementById("cityIcon").textContent = city.icon;
+    document.getElementById("cityMood").textContent =
+        `${city.mood} · ${city.description}`;
+
+    document.getElementById("mapTitle").textContent = city.mapTitle;
+    document.getElementById("cityStatus").textContent = city.status;
+
+    // Update the browser's theme colour where supported.
+    const themeColor = {
+        lagos: "#101815",
+        abuja: "#111b18",
+        ibadan: "#211613",
+        "port-harcourt": "#0c1b21",
+        "benin-city": "#201513",
+        onitsha: "#171912"
+    };
+
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+
+    if (metaTheme) {
+        metaTheme.content = themeColor[game.currentCity] || themeColor.lagos;
+    }
+}
+
+// Add a city selector without removing the existing HTML.
+function setupCitySelector() {
+    const identity = document.querySelector(".city-identity");
+
+    if (!identity || document.getElementById("citySelector")) return;
+
+    const wrapper = document.createElement("label");
+    wrapper.className = "city-selector-wrap";
+    wrapper.htmlFor = "citySelector";
+
+    wrapper.innerHTML = `
+        <span class="eyebrow">TRAVEL TO</span>
+        <select id="citySelector" aria-label="Choose a city">
+            ${Object.entries(cities).map(([id, city]) => `
+                <option value="${id}">${city.name}</option>
+            `).join("")}
+        </select>
+    `;
+
+    identity.appendChild(wrapper);
+
+    const selector = wrapper.querySelector("select");
+
+    selector.value = cities[game.currentCity] ? game.currentCity : "lagos";
+
+    selector.addEventListener("change", () => {
+        const nextCity = selector.value;
+
+        if (!cities[nextCity]) return;
+        if (nextCity === game.currentCity) return;
+
+        game.currentCity = nextCity;
+        game.day++;
+
+        log(`Travelled to ${cities[nextCity].name}.`);
+
+        showMessage(`Welcome to ${cities[nextCity].name}: ${cities[nextCity].mood}.`);
+
+        render();
+    });
+}
+```
 const game = {
 
     cash: 25000,
