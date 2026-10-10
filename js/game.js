@@ -924,11 +924,69 @@ function spendEnergy(amount) {
     game.energy -= amount;
     return true;
 }
-
+/* =================================
+   VISUAL CITY SELECTOR
+================================= */
+function renderCityCards() {
+    const container = document.getElementById("cityCards");
+    if (!container) return;
+    container.innerHTML = "";
+    Object.entries(cities).forEach(([id, city]) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "city-card";
+        const isCurrent = game.currentCity === id;
+        if (isCurrent) {
+            card.classList.add("active");
+        }
+        card.setAttribute(
+            "aria-label",
+            isCurrent
+                ? `${city.name}, your current city`
+                : `Travel to ${city.name}`
+        );
+        card.style.setProperty(
+            "--city-image",
+            `url("images/cities/${id}.jpg")`
+        );
+        card.innerHTML = `
+            <div class="city-card-top">
+                <span class="city-card-icon">${city.icon}</span>
+                <span class="city-card-badge">
+                    ${isCurrent ? "CURRENT CITY" : "EXPLORE"}
+                </span>
+            </div>
+            <h3>${city.name}</h3>
+            <p>${city.mood}<br>${city.description}</p>
+            <span class="city-card-action">
+                ${isCurrent ? "You're here ✓" : "Travel here →"}
+            </span>
+        `;
+        card.addEventListener("click", () => {
+            if (game.currentCity !== id) {
+                travelToCity(id);
+            }
+        });
+        container.appendChild(card);
+    });
+}
 /* ==========================================
    6. CITY THEMING
    ========================================== */
+function render() {
+    renderCityTheme();
+    renderCityCards();
 
+    renderStats();
+    renderMap();
+    renderLocation();
+    renderAvailableJobs();
+    renderNPCs();
+    renderMissions();
+    renderLog();
+
+    saveGame();
+}
 function renderCityTheme() {
     const city = currentCity();
 
