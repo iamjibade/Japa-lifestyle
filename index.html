@@ -1,211 +1,209 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="lagos">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta name="theme-color" content="#101b19">
-    <meta name="description" content="Live the hustle, build your future, and write your own Japa story.">
-
-    <title>Japa Lifestyle — Your Nigerian Story</title>
-
-    <!-- Nigerian-inspired modern game typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="css/style.css">
+    <meta name="theme-color" content="#101629">
+    <meta name="description" content="Japa Lifestyle — a Nigerian life simulation game by Ibrish Digital.">
+    <title>Japa Lifestyle — World Alpha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script defer src="js/game.js"></script>
 </head>
-
-<body data-theme="lagos">
-
-<div class="game-container">
-
-    <!-- CITY IDENTITY -->
+<body>
+    <div class="app-shell">
     <header class="game-header">
-        <div class="brand-block">
-            <span class="eyebrow">JAPA LIFESTYLE · NIGERIA</span>
-            <h1>Japa <span>Lifestyle.</span></h1>
-            <p id="locationText">You are at Home.</p>
-        </div>
-
-        <div class="city-identity">
-            <span class="city-icon" id="cityIcon">📍</span>
+        <div class="brand">
+            <div class="brand-mark">🌍</div>
             <div>
-                <span class="eyebrow">YOUR CURRENT CITY</span>
-                <h2 id="cityName">Lagos</h2>
-                <p id="cityMood">The Hustle · Bigger dreams, same Naija spirit.</p>
+                <p class="eyebrow">IBRISH DIGITAL PRESENTS</p>
+                <h1>Japa <span>Lifestyle</span></h1>
+                <p class="header-subtitle">World Alpha · A Nigerian life simulator</p>
             </div>
         </div>
-
-        <div class="day-badge">
-            <span>YOUR JOURNEY</span>
-            <strong>DAY <span id="day">1</span></strong>
+        <div class="header-right">
+            <div class="day-badge">
+                <span class="pulse-dot"></span>
+                <span>DAY <strong id="day">1</strong></span>
+            </div>
+            <button class="button button-ghost button-small" id="resetButton" type="button">
+                ↻ New game
+            </button>
         </div>
     </header>
-<section class="city-travel panel">
-    <div class="panel-heading">
-        <div>
-            <span class="eyebrow">YOUR NEXT CHAPTER</span>
-            <h2>Choose Your Next City</h2>
-            <p class="muted">Every city has its own story. Where will you go?</p>
-        </div>
-    </div>
-    <div id="cityCards" class="city-cards"></div>
-</section>
-    <!-- PLAYER STATS -->
-    <section class="stats-grid" aria-label="Player statistics">
-        <div class="stat-card">
-            <span>💰 Wallet</span>
-            <strong id="cash">₦25,000</strong>
-        </div>
-
-        <div class="stat-card">
-            <span>⚡ Energy</span>
-            <strong id="energy">100</strong>
-        </div>
-
-        <div class="stat-card">
-            <span>⭐ Reputation</span>
-            <strong id="reputation">0</strong>
-        </div>
-
-        <div class="stat-card">
-            <span>🎯 Skill XP</span>
-            <strong id="xp">0</strong>
-        </div>
-
-        <div class="stat-card">
-            <span>✈️ Japa Fund</span>
-            <strong id="japaFund">₦0</strong>
-        </div>
-    </section>
-
-    <!-- MAIN GAME AREA -->
-    <main class="game-grid">
-
-        <!-- CITY EXPLORATION -->
-        <section class="panel map-panel">
-            <div class="panel-heading">
-                <div>
-                    <span class="eyebrow">EXPLORE YOUR WORLD</span>
-                    <h2 id="mapTitle">Lagos City Map</h2>
-                    <p>Choose your next destination.</p>
-                </div>
-
-                <span class="status-badge" id="cityStatus">
-                    🇳🇬 The city is alive
-                </span>
-            </div>
-
-            <div id="cityMap" class="city-map"></div>
-            <div id="locationPanel" class="location-panel"></div>
-        </section>
-
-        <!-- PEOPLE AND OPPORTUNITIES -->
-        <aside class="panel people-panel">
-            <div class="panel-heading">
-                <div>
-                    <span class="eyebrow">YOUR COMMUNITY</span>
-                    <h2>People Nearby</h2>
-                    <p>Every connection could open a door.</p>
-                </div>
-            </div>
-
-            <div id="npcs"></div>
-
-            <div class="section-divider"></div>
-
-            <div class="panel-heading">
-                <div>
-                    <span class="eyebrow">MAKE YOUR MOVE</span>
-                    <h2>Today's Opportunity</h2>
-                </div>
-            </div>
-
-            <div id="opportunity"></div>
-        </aside>
-
-    </main>
-
-    <!-- MISSIONS AND SAVINGS -->
-    <section class="bottom-grid">
-
-        <div class="panel missions-panel">
-            <div class="panel-heading">
-                <div>
-                    <span class="eyebrow">YOUR NEXT MOVE</span>
-                    <h2>Active Missions</h2>
-                    <p>Work smart. Earn rewards. Build your story.</p>
-                </div>
-            </div>
-
-            <div id="missions"></div>
-        </div>
-
-        <div class="panel progress-panel">
-            <div class="panel-heading">
-                <div>
-                    <span class="eyebrow">THE BIG DREAM</span>
-                    <h2>✈️ Japa Progress</h2>
-                    <p>Your first milestone: ₦250,000.</p>
-                </div>
-            </div>
-
-            <div class="progress-label">
-                <span id="fundAmount">₦0</span>
-                <span>₦250,000</span>
-            </div>
-
-            <div
-                class="progress-bar"
-                role="progressbar"
-                aria-label="Japa fund progress"
-                aria-valuemin="0"
-                aria-valuemax="250000"
-                aria-valuenow="0"
-            >
-                <div id="fundProgress"></div>
-            </div>
-
-            <div class="action-buttons">
-                <button id="saveButton" class="primary-button">
-                    💰 Save ₦5,000
-                </button>
-
-                <button id="restButton" class="secondary-button">
-                    🛌 Rest
-                </button>
-            </div>
-
-            <p id="message" class="message" aria-live="polite">
-                Your story starts here. Make your next move count.
-            </p>
-        </div>
-
-    </section>
-
-    <!-- JOURNEY HISTORY -->
-    <section class="panel journey-panel">
-        <div class="panel-heading">
+    <main>
+        <section class="welcome-strip">
             <div>
-                <span class="eyebrow">EVERY STEP COUNTS</span>
-                <h2>📖 Journey Log</h2>
-                <p>Your story, one day at a time.</p>
+                <p class="eyebrow">YOUR STORY. YOUR MOVES.</p>
+                <h2>Make moves. Build your future.</h2>
+                <p>Take jobs, meet people, explore Nigeria, and grow your fictional Japa Fund.</p>
             </div>
-        </div>
-
-        <div id="journeyLog"></div>
-    </section>
-
-    <footer class="game-footer">
-        <span>MADE FOR THE NAIJA DREAMERS</span>
-        <p>Japa is a journey, not just a destination.</p>
-        <p>Powered by <b>Ibrish</b></p>
+            <div class="welcome-icon">✈️</div>
+        </section>
+        <section class="stats-grid">
+            <article class="stat-card">
+                <span class="stat-icon">₦</span>
+                <div>
+                    <p>Cash on hand</p>
+                    <strong id="cash">₦25,000</strong>
+                    <small>Available to spend</small>
+                </div>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon">⚡</span>
+                <div>
+                    <p>Energy</p>
+                    <strong id="energy">100%</strong>
+                    <div class="mini-track"><span id="energyBar"></span></div>
+                </div>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon">✦</span>
+                <div>
+                    <p>Reputation</p>
+                    <strong id="reputation">0</strong>
+                    <small>People know your name</small>
+                </div>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon">↗</span>
+                <div>
+                    <p>Experience</p>
+                    <strong id="xp">0 XP</strong>
+                    <small>Learn as you go</small>
+                </div>
+            </article>
+        </section>
+        <section class="city-travel panel">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">YOUR NEXT CHAPTER</p>
+                    <h2>Choose your city</h2>
+                    <p class="muted">Six cities. Different opportunities. One big dream.</p>
+                </div>
+                <span class="section-chip">🧭 Explore Nigeria</span>
+            </div>
+            <div id="cityCards" class="city-cards"></div>
+            <p class="travel-note">
+                Travel costs <strong>10 energy</strong>. Your cash and progress travel with you.
+            </p>
+        </section>
+        <section class="game-grid">
+            <article class="panel map-panel">
+                <div class="section-heading compact">
+                    <div>
+                        <p class="eyebrow">CITY GUIDE</p>
+                        <h2 id="mapTitle">Lagos City Map</h2>
+                        <p id="cityMood" class="muted">The hustle is real. Keep moving.</p>
+                    </div>
+                    <span id="cityStatus" class="status-badge">● City life</span>
+                </div>
+                <div id="cityMap" class="city-map"></div>
+                <div class="location-panel">
+                    <div class="location-heading">
+                        <div>
+                            <p class="eyebrow">CURRENT STOP</p>
+                            <h3 id="currentLocationName">Home</h3>
+                        </div>
+                        <span class="location-pin">📍</span>
+                    </div>
+                    <p id="locationDescription" class="muted">
+                        Take a breath and plan your next move.
+                    </p>
+                    <div id="locationPanel" class="location-actions"></div>
+                </div>
+            </article>
+            <aside class="side-stack">
+                <article class="panel">
+                    <div class="section-heading compact">
+                        <div>
+                            <p class="eyebrow">PEOPLE & CONNECTIONS</p>
+                            <h2>Meet the locals</h2>
+                        </div>
+                        <span class="heading-icon">🤝</span>
+                    </div>
+                    <div id="npcs" class="npc-list"></div>
+                </article>
+                <article class="panel opportunity-panel">
+                    <div class="section-heading compact">
+                        <div>
+                            <p class="eyebrow">SMALL STEPS, BIG WINS</p>
+                            <h2>Daily opportunity</h2>
+                        </div>
+                        <span class="heading-icon">💡</span>
+                    </div>
+                    <p class="muted">
+                        Complete tasks to earn in-game cash, experience, and reputation.
+                    </p>
+                    <div id="opportunity" class="opportunity-content"></div>
+                </article>
+            </aside>
+        </section>
+        <section class="bottom-grid">
+            <article class="panel missions-panel">
+                <div class="section-heading compact">
+                    <div>
+                        <p class="eyebrow">YOUR TO-DO LIST</p>
+                        <h2>Active missions</h2>
+                    </div>
+                    <span class="heading-icon">🎯</span>
+                </div>
+                <div id="missions" class="missions-list"></div>
+            </article>
+            <article class="panel fund-panel">
+                <div class="section-heading compact">
+                    <div>
+                        <p class="eyebrow">THE BIG DREAM</p>
+                        <h2>Your Japa Fund</h2>
+                    </div>
+                    <span class="heading-icon">✈️</span>
+                </div>
+                <p class="muted">
+                    Save your in-game earnings toward a fictional goal of ₦1,000,000.
+                </p>
+                <div class="fund-total">
+                    <strong id="fundAmount">₦0</strong>
+                    <span>of ₦1,000,000</span>
+                </div>
+                <div class="progress-track">
+                    <span id="fundProgress"></span>
+                </div>
+                <p id="fundPercent" class="progress-caption">0% of your goal</p>
+                <div class="fund-actions">
+                    <button id="saveButton" class="button button-primary" type="button">
+                        ＋ Save ₦5,000
+                    </button>
+                    <button id="restButton" class="button button-secondary" type="button">
+                        ☕ Rest & recharge
+                    </button>
+                </div>
+                <p id="message" class="message" role="status" aria-live="polite">
+                    Welcome! Your next chapter starts now.
+                </p>
+            </article>
+        </section>
+        <section class="panel journey-panel">
+            <div class="section-heading compact">
+                <div>
+                    <p class="eyebrow">THE STORY SO FAR</p>
+                    <h2>Journey log</h2>
+                </div>
+                <button id="clearLogButton" class="text-button" type="button">
+                    Clear log
+                </button>
+            </div>
+            <ol id="journeyLog" class="journey-log"></ol>
+        </section>
+    </main>
+    <footer>
+        <span>Japa Lifestyle · World Alpha</span>
+        <span>Made for the dreamers 🇳🇬 · <strong>Ibrish Digital</strong></span>
     </footer>
-
 </div>
-
-<script src="js/game.js"></script>
+<noscript>
+    <div class="noscript">Please enable JavaScript to play Japa Lifestyle.</div>
+</noscript>
 </body>
 </html>
