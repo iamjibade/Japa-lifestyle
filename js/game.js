@@ -1,1131 +1,1477 @@
-“use strict”;
+"use strict";
 
-const SAVE_KEY = “japaLifestyleWorldAlpha_v2”;
-const FUND_GOAL = 1000000;
-const TRAVEL_ENERGY = 10;
+/* ==========================================
+   JAPA LIFESTYLE — WORLD ALPHA
+   Nigerian Life Simulation Game
+   ========================================== */
 
-const cities = {
-lagos: {
-name: “Lagos”,
-icon: “🌆”,
-mood: “The hustle is real. Keep moving.”,
-description: “Fast-paced streets, big dreams, and plenty of ways to make a move.”,
-status: “The Hustle”,
-image: “images/lagos.jpg”,
-locations: [
-{
-id: “home”,
-name: “Home”,
-icon: “🏠”,
-type: “Rest”,
-description: “Your base. Recover energy and plan the day.”,
-jobs: []
-},
-{
-id: “market”,
-name: “Balogun Market”,
-icon: “🛍️”,
-type: “Trade”,
-description: “A busy market where a sharp mind can find opportunity.”,
-jobs: [
-{
-id: “market-run”,
-title: “Help a market trader”,
-description: “Sort and deliver a small order nearby.”,
-pay: 6500,
-energy: 12,
-xp: 10,
-rep: 1
-}
-]
-},
-{
-id: “tech”,
-name: “Yaba Tech Hub”,
-icon: “💻”,
-type: “Tech”,
-description: “Ideas, laptops, and people building the next big thing.”,
-jobs: [
-{
-id: “web-fix”,
-title: “Fix a small website issue”,
-description: “Help a small business update its web page.”,
-pay: 10000,
-energy: 18,
-xp: 20,
-rep: 2
-}
-]
-},
-{
-id: “transport”,
-name: “Ojota Bus Stop”,
-icon: “🚌”,
-type: “Transport”,
-description: “A lively transport link with people going everywhere.”,
-jobs: [
-{
-id: “dispatch”,
-title: “Assist with dispatch”,
-description: “Help coordinate a local delivery run.”,
-pay: 7500,
-energy: 16,
-xp: 12,
-rep: 1
-}
-]
-},
-{
-id: “food”,
-name: “Street Food Corner”,
-icon: “🍲”,
-type: “Food”,
-description: “Grab a bite, reset your energy, and keep going.”,
-jobs: [
-{
-id: “food-support”,
-title: “Help a food vendor”,
-description: “Assist during a busy service period.”,
-pay: 5500,
-energy: 10,
-xp: 9,
-rep: 1
-}
-]
-},
-{
-id: “business”,
-name: “Victoria Island”,
-icon: “🏢”,
-type: “Business”,
-description: “Meet professionals and look for the next opportunity.”,
-jobs: [
-{
-id: “client-pitch”,
-title: “Prepare a client pitch”,
-description: “Help a small team prepare a simple proposal.”,
-pay: 12000,
-energy: 20,
-xp: 24,
-rep: 3
-}
-]
-}
-]
-},
+/* ==========================================
+   1. GAME STATE & SAVE SYSTEM
+   ========================================== */
 
-abuja: {
-    name: "Abuja",
-    icon: "🏛️",
-    mood: "Plan smart. Move with purpose.",
-    description: "A city of offices, calm avenues, and opportunities for organised minds.",
-    status: "The Capital",
-    image: "images/abuja.jpg",
-    locations: [
-        {
-            id: "abuja-home",
-            name: "Wuse Apartment",
-            icon: "🏠",
-            type: "Rest",
-            description: "Your Abuja base. Take a moment to recover.",
-            jobs: []
-        },
-        {
-            id: "abuja-business",
-            name: "Central Business District",
-            icon: "🏢",
-            type: "Business",
-            description: "Professional connections and office-based opportunities.",
-            jobs: [
-                {
-                    id: "office-support",
-                    title: "Help an office team",
-                    description: "Organise a small task list and update records.",
-                    pay: 10500,
-                    energy: 17,
-                    xp: 19,
-                    rep: 2
-                }
-            ]
-        },
-        {
-            id: "abuja-market",
-            name: "Wuse Market",
-            icon: "🛍️",
-            type: "Trade",
-            description: "A busy shopping area with plenty of activity.",
-            jobs: [
-                {
-                    id: "abuja-market-run",
-                    title: "Support a local seller",
-                    description: "Help prepare and organise customer orders.",
-                    pay: 7000,
-                    energy: 12,
-                    xp: 11,
-                    rep: 1
-                }
-            ]
-        },
-        {
-            id: "abuja-tech",
-            name: "Innovation Space",
-            icon: "💻",
-            type: "Tech",
-            description: "Work on practical digital solutions.",
-            jobs: [
-                {
-                    id: "digital-task",
-                    title: "Complete a digital task",
-                    description: "Help a small organisation with a web update.",
-                    pay: 11500,
-                    energy: 18,
-                    xp: 22,
-                    rep: 2
-                }
-            ]
-        }
-    ]
-},
-ibadan: {
-    name: "Ibadan",
-    icon: "🌇",
-    mood: "Steady progress is still progress.",
-    description: "A city with deep roots, student energy, and room to grow.",
-    status: "The Red City",
-    image: "images/ibadan.jpg",
-    locations: [
-        {
-            id: "ibadan-home",
-            name: "Family House",
-            icon: "🏠",
-            type: "Rest",
-            description: "Rest up before your next task.",
-            jobs: []
-        },
-        {
-            id: "ibadan-market",
-            name: "Bodija Market",
-            icon: "🛍️",
-            type: "Trade",
-            description: "A busy market with local businesses to support.",
-            jobs: [
-                {
-                    id: "bodija-help",
-                    title: "Help a market stall",
-                    description: "Organise goods and help with customer requests.",
-                    pay: 6000,
-                    energy: 12,
-                    xp: 10,
-                    rep: 1
-                }
-            ]
-        },
-        {
-            id: "ibadan-tech",
-            name: "Student Tech Corner",
-            icon: "💻",
-            type: "Tech",
-            description: "Learn, build, and share ideas with other creators.",
-            jobs: [
-                {
-                    id: "student-site",
-                    title: "Update a student website",
-                    description: "Make a simple content update for a local group.",
-                    pay: 8500,
-                    energy: 15,
-                    xp: 18,
-                    rep: 2
-                }
-            ]
-        },
-        {
-            id: "ibadan-transport",
-            name: "Challenge Bus Park",
-            icon: "🚌",
-            type: "Transport",
-            description: "A busy transport hub connecting people and places.",
-            jobs: [
-                {
-                    id: "ibadan-dispatch",
-                    title: "Coordinate a pickup",
-                    description: "Help a local business organise a pickup.",
-                    pay: 6500,
-                    energy: 13,
-                    xp: 11,
-                    rep: 1
-                }
-            ]
-        }
-    ]
-},
-"port-harcourt": {
-    name: "Port Harcourt",
-    icon: "🌴",
-    mood: "Stay sharp. Build your network.",
-    description: "A lively riverside city where practical skills can open doors.",
-    status: "The Garden City",
-    image: "images/port-harcourt.jpg",
-    locations: [
-        {
-            id: "ph-home",
-            name: "Rumuola Home",
-            icon: "🏠",
-            type: "Rest",
-            description: "Recharge and plan your next move.",
-            jobs: []
-        },
-        {
-            id: "ph-business",
-            name: "GRA Business Strip",
-            icon: "🏢",
-            type: "Business",
-            description: "Connect with small businesses and service providers.",
-            jobs: [
-                {
-                    id: "ph-records",
-                    title: "Organise business records",
-                    description: "Help a small team tidy up its customer records.",
-                    pay: 9500,
-                    energy: 16,
-                    xp: 17,
-                    rep: 2
-                }
-            ]
-        },
-        {
-            id: "ph-market",
-            name: "Mile 1 Market",
-            icon: "🛍️",
-            type: "Trade",
-            description: "Support a local seller and earn your keep.",
-            jobs: [
-                {
-                    id: "mile-one",
-                    title: "Help prepare orders",
-                    description: "Sort items for customers and nearby deliveries.",
-                    pay: 7000,
-                    energy: 13,
-                    xp: 11,
-                    rep: 1
-                }
-            ]
-        },
-        {
-            id: "ph-transport",
-            name: "Waterfront Link",
-            icon: "🚐",
-            type: "Transport",
-            description: "Help keep a local movement plan on track.",
-            jobs: [
-                {
-                    id: "ph-route",
-                    title: "Plan a delivery route",
-                    description: "Arrange stops for a small delivery run.",
-                    pay: 8000,
-                    energy: 15,
-                    xp: 14,
-                    rep: 2
-                }
-            ]
-        }
-    ]
-},
-"benin-city": {
-    name: "Benin City",
-    icon: "🏺",
-    mood: "Respect your roots. Create your path.",
-    description: "A proud cultural city with local trade and creative possibilities.",
-    status: "The Heart of Edo",
-    image: "images/benin-city.jpg",
-    locations: [
-        {
-            id: "benin-home",
-            name: "GRA Residence",
-            icon: "🏠",
-            type: "Rest",
-            description: "Take a break and prepare for the next challenge.",
-            jobs: []
-        },
-        {
-            id: "benin-market",
-            name: "Oba Market",
-            icon: "🛍️",
-            type: "Trade",
-            description: "A lively market where local enterprise thrives.",
-            jobs: [
-                {
-                    id: "oba-orders",
-                    title: "Help a trader organise orders",
-                    description: "Sort products and assist with a customer list.",
-                    pay: 6200,
-                    energy: 12,
-                    xp: 10,
-                    rep: 1
-                }
-            ]
-        },
-        {
-            id: "benin-tech",
-            name: "Creative Tech Desk",
-            icon: "💻",
-            type: "Tech",
-            description: "Use your digital skills to solve a practical problem.",
-            jobs: [
-                {
-                    id: "benin-web",
-                    title: "Create a simple web update",
-                    description: "Update information for a community project.",
-                    pay: 9000,
-                    energy: 16,
-                    xp: 19,
-                    rep: 2
-                }
-            ]
-        },
-        {
-            id: "benin-business",
-            name: "City Business Corner",
-            icon: "🏢",
-            type: "Business",
-            description: "Build connections with people growing local businesses.",
-            jobs: [
-                {
-                    id: "benin-client",
-                    title: "Prepare a business flyer",
-                    description: "Help a small business prepare a promo flyer brief.",
-                    pay: 8500,
-                    energy: 14,
-                    xp: 16,
-                    rep: 2
-                }
-            ]
-        }
-    ]
-},
-onitsha: {
-    name: "Onitsha",
-    icon: "🚢",
-    mood: "Trade smart. Think ahead.",
-    description: "A commercial powerhouse full of movement, trade, and ambition.",
-    status: "The Trade Hub",
-    image: "images/onitsha.jpg",
-    locations: [
-        {
-            id: "onitsha-home",
-            name: "GRA Home",
-            icon: "🏠",
-            type: "Rest",
-            description: "Rest and get ready for a new day.",
-            jobs: []
-        },
-        {
-            id: "onitsha-market",
-            name: "Main Market",
-            icon: "🛍️",
-            type: "Trade",
-            description: "A major commercial centre with many moving parts.",
-            jobs: [
-                {
-                    id: "main-market",
-                    title: "Support a shop owner",
-                    description: "Help organise stock and a customer order list.",
-                    pay: 8000,
-                    energy: 15,
-                    xp: 13,
-                    rep: 2
-                }
-            ]
-        },
-        {
-            id: "onitsha-transport",
-            name: "River Transport Link",
-            icon: "🚚",
-            type: "Transport",
-            description: "Coordinate movement and keep plans organised.",
-            jobs: [
-                {
-                    id: "river-route",
-                    title: "Organise a delivery route",
-                    description: "Plan a practical route for local orders.",
-                    pay: 8500,
-                    energy: 15,
-                    xp: 15,
-                    rep: 2
-                }
-            ]
-        },
-        {
-            id: "onitsha-tech",
-            name: "Digital Services Desk",
-            icon: "💻",
-            type: "Tech",
-            description: "Help a business take a step into the digital space.",
-            jobs: [
-                {
-                    id: "onitsha-digital",
-                    title: "Help a shop go digital",
-                    description: "Organise product details for an online catalogue.",
-                    pay: 10000,
-                    energy: 17,
-                    xp: 20,
-                    rep: 2
-                }
-            ]
-        }
-    ]
-}
+const SAVE_KEY = "japaLifestyleSave";
+const FUND_TARGET = 250000;
 
+const game = {
+    cash: 25000,
+    energy: 100,
+    reputation: 0,
+    xp: 0,
+    japaFund: 0,
+    day: 1,
+    currentCity: "lagos",
+    currentLocation: "home",
+    missions: [],
+    logs: []
 };
 
-const characters = {
-lagos: [
-{ name: “Tomi”, role: “Junior developer”, icon: “👩🏽‍💻”, line: “Keep learning. One good project can open a door.” },
-{ name: “Chuka”, role: “Dispatch coordinator”, icon: “🧑🏽‍💼”, line: “Planning the route saves time and stress.” },
-{ name: “Aunty Bisi”, role: “Market trader”, icon: “👩🏾‍🍳”, line: “Treat people well and they will remember you.” }
-],
-
-abuja: [
-    { name: "Zainab", role: "Project assistant", icon: "👩🏽‍💼", line: "Be organised. People trust people who follow through." },
-    { name: "Musa", role: "Small business owner", icon: "🧑🏾‍💼", line: "A clear plan makes a hard task feel possible." },
-    { name: "Nneka", role: "Digital creator", icon: "👩🏾‍💻", line: "Your skills grow each time you use them." }
-],
-ibadan: [
-    { name: "Tunde", role: "Student entrepreneur", icon: "🧑🏽‍🎓", line: "Start small, but start with intention." },
-    { name: "Kemi", role: "Shop manager", icon: "👩🏽‍💼", line: "Consistency is more powerful than one big day." },
-    { name: "Seyi", role: "Web designer", icon: "🧑🏾‍💻", line: "Build a portfolio that shows what you can do." }
-],
-"port-harcourt": [
-    { name: "Amaka", role: "Operations lead", icon: "👩🏾‍💼", line: "Communication keeps the whole team moving." },
-    { name: "Dumo", role: "Local entrepreneur", icon: "🧑🏿‍💼", line: "Know your costs before you make a promise." },
-    { name: "Ebi", role: "Creative freelancer", icon: "👩🏽‍🎨", line: "Good work and a good attitude travel together." }
-],
-"benin-city": [
-    { name: "Osas", role: "Creative designer", icon: "🧑🏽‍🎨", line: "Let your work tell a clear story." },
-    { name: "Efe", role: "Business owner", icon: "👩🏾‍💼", line: "A strong reputation is built one promise at a time." },
-    { name: "Omoregie", role: "Tech learner", icon: "🧑🏾‍💻", line: "Ask questions and keep practising." }
-],
-onitsha: [
-    { name: "Chidi", role: "Trader", icon: "🧑🏿‍💼", line: "Keep your records straight and your customers informed." },
-    { name: "Ada", role: "Online seller", icon: "👩🏽‍💻", line: "Digital tools can help a small shop reach more people." },
-    { name: "Ifeanyi", role: "Logistics planner", icon: "🧑🏾‍🚚", line: "Every good delivery starts with a realistic plan." }
-]
-
-};
-
-function createNewGame() {
-return {
-cash: 25000,
-energy: 100,
-reputation: 0,
-xp: 0,
-japaFund: 0,
-day: 1,
-currentCity: “lagos”,
-currentLocation: “home”,
-completedJobs: [],
-talkedTo: [],
-missions: [],
-logs: [],
-missionSequence: 1
-};
-}
-
-let game = createNewGame();
-let messageTimer = null;
-
-function money(amount) {
-return new Intl.NumberFormat(“en-NG”, {
-style: “currency”,
-currency: “NGN”,
-maximumFractionDigits: 0
-}).format(Math.max(0, Math.round(amount)));
-}
-
-function getCity() {
-return cities[game.currentCity] || cities.lagos;
-}
-
-function getLocation() {
-const city = getCity();
-
-return city.locations.find(location => location.id === game.currentLocation)
-    || city.locations[0];
-
-}
-
-function setText(id, value) {
-const element = document.getElementById(id);
-
-if (element) {
-    element.textContent = value;
-}
-
-}
-
-function showMessage(message, type = “”) {
-const box = document.getElementById(“message”);
-
-if (!box) return;
-box.textContent = message;
-box.className = `message${type ? ` ${type}` : ""}`;
-if (messageTimer) {
-    clearTimeout(messageTimer);
-}
-messageTimer = setTimeout(() => {
-    box.className = "message";
-}, 4200);
-
-}
+let messageTimeout = null;
 
 function saveGame(showFeedback = false) {
-try {
-localStorage.setItem(SAVE_KEY, JSON.stringify(game));
+    try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(game));
 
-    if (showFeedback) {
-        showMessage("Your progress has been saved on this device.", "success");
-    }
-} catch (error) {
-    console.warn("Could not save game:", error);
-    if (showFeedback) {
-        showMessage("Could not save progress in this browser.", "error");
-    }
-}
+        if (showFeedback) {
+            showMessage("Your game progress has been saved.");
+        }
 
+        return true;
+    } catch (error) {
+        console.error("Could not save game:", error);
+
+        if (showFeedback) {
+            showMessage("Unable to save. Check your browser settings.");
+        }
+
+        return false;
+    }
 }
 
 function loadGame() {
-try {
-const saved = localStorage.getItem(SAVE_KEY);
+    try {
+        const saved = localStorage.getItem(SAVE_KEY);
 
-    if (!saved) return false;
-    const data = JSON.parse(saved);
-    if (!data || typeof data !== "object") return false;
-    game = { ...createNewGame(), ...data };
-    if (!cities[game.currentCity]) {
-        game.currentCity = "lagos";
+        if (!saved) return false;
+
+        const data = JSON.parse(saved);
+
+        if (
+            !data ||
+            typeof data !== "object" ||
+            !Number.isFinite(data.cash) ||
+            !Number.isFinite(data.energy) ||
+            !Array.isArray(data.missions) ||
+            !Array.isArray(data.logs)
+        ) {
+            throw new Error("Invalid save data");
+        }
+
+        // Support older saves from the original Lagos prototype.
+        const oldLocationAliases = {
+            home: "home",
+            market: "market",
+            tech: "tech",
+            transport: "transport",
+            food: "food",
+            business: "business"
+        };
+
+        const migratedLocation =
+            oldLocationAliases[data.currentLocation] ||
+            data.currentLocation;
+
+        if (!locations[migratedLocation]) {
+            data.currentCity = "lagos";
+            data.currentLocation = "home";
+        } else {
+            data.currentLocation = migratedLocation;
+        }
+
+        if (!cities[data.currentCity]) {
+            data.currentCity = "lagos";
+        }
+
+        // Restore only recognised numeric values.
+        for (const key of [
+            "cash", "energy", "reputation",
+            "xp", "japaFund", "day"
+        ]) {
+            if (Number.isFinite(data[key])) {
+                game[key] = Math.max(0, data[key]);
+            }
+        }
+
+        game.energy = Math.min(100, game.energy);
+        game.day = Math.max(1, Math.floor(game.day));
+
+        game.currentCity = data.currentCity;
+        game.currentLocation = data.currentLocation;
+
+        // Ignore malformed mission entries.
+        game.missions = data.missions
+            .filter(mission =>
+                mission &&
+                typeof mission.title === "string" &&
+                Number.isFinite(mission.reward) &&
+                Number.isFinite(mission.energy) &&
+                Number.isFinite(mission.xp) &&
+                Number.isFinite(mission.reputation)
+            )
+            .map(mission => ({ ...mission }));
+
+        game.logs = data.logs
+            .filter(entry => typeof entry === "string")
+            .slice(0, 20);
+
+        // Keep city and neighbourhood consistent.
+        if (locations[game.currentLocation].city !== game.currentCity) {
+            game.currentCity = locations[game.currentLocation].city;
+        }
+
+        return true;
+
+    } catch (error) {
+        console.error("Could not load saved game:", error);
+        return false;
     }
-    const validLocation = getCity().locations.some(
-        location => location.id === game.currentLocation
-    );
-    if (!validLocation) {
-        game.currentLocation = getCity().locations[0].id;
-    }
-    game.cash = Math.max(0, Number(game.cash) || 0);
-    game.energy = Math.min(100, Math.max(0, Number(game.energy) || 0));
-    game.reputation = Math.max(0, Number(game.reputation) || 0);
-    game.xp = Math.max(0, Number(game.xp) || 0);
-    game.japaFund = Math.min(FUND_GOAL, Math.max(0, Number(game.japaFund) || 0));
-    game.day = Math.max(1, Number(game.day) || 1);
-    return true;
-} catch (error) {
-    console.warn("Could not load saved game:", error);
-    return false;
 }
 
+/* ==========================================
+   2. CITY CONFIGURATION
+   ========================================== */
+
+const cities = {
+    lagos: {
+        name: "Lagos",
+        icon: "🌆",
+        mood: "The Hustle",
+        description: "Bigger dreams, same Naija spirit.",
+        status: "🚌 Traffic: Moderate",
+        mapTitle: "Lagos City Map",
+        startLocation: "home"
+    },
+
+    abuja: {
+        name: "Abuja",
+        icon: "🏙️",
+        mood: "The Ambition",
+        description: "Think bigger. Build your future.",
+        status: "🏢 The city of opportunity",
+        mapTitle: "Abuja City Map",
+        startLocation: "abuja-home"
+    },
+
+    ibadan: {
+        name: "Ibadan",
+        icon: "🌄",
+        mood: "The Grind",
+        description: "Slow beginnings. Big possibilities.",
+        status: "🤝 Community and enterprise",
+        mapTitle: "Ibadan City Map",
+        startLocation: "ibadan-home"
+    },
+
+    "port-harcourt": {
+        name: "Port Harcourt",
+        icon: "🌴",
+        mood: "The River City",
+        description: "Find your lane. Make your move.",
+        status: "🌧️ Tropical atmosphere",
+        mapTitle: "Port Harcourt City Map",
+        startLocation: "ph-home"
+    },
+
+    "benin-city": {
+        name: "Benin City",
+        icon: "🏺",
+        mood: "The Heritage",
+        description: "Rooted in history. Ready for tomorrow.",
+        status: "🏺 Heritage meets hustle",
+        mapTitle: "Benin City Map",
+        startLocation: "benin-home"
+    },
+
+    onitsha: {
+        name: "Onitsha",
+        icon: "🛍️",
+        mood: "The Marketplace",
+        description: "Business moves. Opportunities multiply.",
+        status: "📦 Trading district",
+        mapTitle: "Onitsha City Map",
+        startLocation: "onitsha-home"
+    }
+};
+
+/* ==========================================
+   3. LOCATIONS, NPCS & JOBS
+
+   All rewards are fictional in-game currency.
+   ========================================== */
+
+const locations = {
+    /* LAGOS */
+
+    home: {
+        city: "lagos",
+        name: "Home",
+        icon: "🏠",
+        description: "Your base. Rest, plan your day and manage your Japa fund.",
+        npc: null,
+        jobs: []
+    },
+
+    market: {
+        city: "lagos",
+        name: "Balogun Market",
+        icon: "🛍️",
+        description: "A busy trading area full of sourcing and selling opportunities.",
+        npc: "Mama Bisi",
+        jobs: [
+            {
+                title: "Source 5 items for a trader",
+                reward: 8500,
+                energy: 18,
+                xp: 25,
+                reputation: 4
+            },
+            {
+                title: "Organise a stock list",
+                reward: 6000,
+                energy: 12,
+                xp: 18,
+                reputation: 3
+            }
+        ]
+    },
+
+    tech: {
+        city: "lagos",
+        name: "Tech Hub",
+        icon: "💻",
+        description: "Developers and small businesses need digital services.",
+        npc: "Tunde",
+        jobs: [
+            {
+                title: "Fix a business landing page",
+                reward: 14000,
+                energy: 22,
+                xp: 30,
+                reputation: 5
+            },
+            {
+                title: "Create a product listing",
+                reward: 8000,
+                energy: 15,
+                xp: 20,
+                reputation: 3
+            }
+        ]
+    },
+
+    transport: {
+        city: "lagos",
+        name: "Transport Park",
+        icon: "🚌",
+        description: "Drivers, dispatch riders and logistics clients exchange jobs here.",
+        npc: "Emeka",
+        jobs: [
+            {
+                title: "Deliver a document across town",
+                reward: 7500,
+                energy: 18,
+                xp: 25,
+                reputation: 4
+            },
+            {
+                title: "Move a small parcel",
+                reward: 9500,
+                energy: 20,
+                xp: 28,
+                reputation: 4
+            }
+        ]
+    },
+
+    food: {
+        city: "lagos",
+        name: "Food Street",
+        icon: "🍲",
+        description: "Food vendors serve workers and occasionally need extra hands.",
+        npc: "Aunty Kemi",
+        jobs: [
+            {
+                title: "Help with a lunch order",
+                reward: 6500,
+                energy: 15,
+                xp: 20,
+                reputation: 3
+            },
+            {
+                title: "Deliver catering packs",
+                reward: 9000,
+                energy: 18,
+                xp: 25,
+                reputation: 4
+            }
+        ]
+    },
+
+    business: {
+        city: "lagos",
+        name: "Business District",
+        icon: "🏢",
+        description: "Companies post higher-value professional contracts here.",
+        npc: "Sarah",
+        jobs: [
+            {
+                title: "Prepare a company proposal",
+                reward: 16000,
+                energy: 25,
+                xp: 35,
+                reputation: 6
+            },
+            {
+                title: "Organise client data",
+                reward: 12000,
+                energy: 20,
+                xp: 28,
+                reputation: 5
+            }
+        ]
+    },
+
+    /* ABUJA */
+
+    "abuja-home": {
+        city: "abuja",
+        name: "Garki Residence",
+        icon: "🏠",
+        description: "Settle in, plan your finances and prepare for new opportunities.",
+        npc: null,
+        jobs: []
+    },
+
+    "abuja-business": {
+        city: "abuja",
+        name: "Central Business District",
+        icon: "🏢",
+        description: "Professional services, corporate contracts and ambitious projects.",
+        npc: "Zainab",
+        jobs: [
+            {
+                title: "Prepare a client presentation",
+                reward: 18000,
+                energy: 22,
+                xp: 35,
+                reputation: 6
+            },
+            {
+                title: "Organise a business report",
+                reward: 12500,
+                energy: 17,
+                xp: 25,
+                reputation: 4
+            }
+        ]
+    },
+
+    "abuja-market": {
+        city: "abuja",
+        name: "Wuse Market",
+        icon: "🛍️",
+        description: "Meet traders and help local businesses improve their operations.",
+        npc: "Hauwa",
+        jobs: [
+            {
+                title: "Update a shop inventory",
+                reward: 8000,
+                energy: 15,
+                xp: 22,
+                reputation: 3
+            },
+            {
+                title: "Arrange a customer order",
+                reward: 9500,
+                energy: 18,
+                xp: 25,
+                reputation: 4
+            }
+        ]
+    },
+
+    "abuja-tech": {
+        city: "abuja",
+        name: "Innovation Hub",
+        icon: "💻",
+        description: "Build digital skills and meet people working on new ideas.",
+        npc: "David",
+        jobs: [
+            {
+                title: "Build a portfolio page",
+                reward: 15000,
+                energy: 22,
+                xp: 35,
+                reputation: 5
+            },
+            {
+                title: "Test a website on mobile",
+                reward: 9000,
+                energy: 15,
+                xp: 25,
+                reputation: 4
+            }
+        ]
+    },
+
+    /* IBADAN */
+
+    "ibadan-home": {
+        city: "ibadan",
+        name: "Mokola Home",
+        icon: "🏠",
+        description: "Start your day and plan your next move in the city of brown rooftops.",
+        npc: null,
+        jobs: []
+    },
+
+    "ibadan-market": {
+        city: "ibadan",
+        name: "Bodija Market",
+        icon: "🧺",
+        description: "Help traders, organise goods and find practical work.",
+        npc: "Mama Ronke",
+        jobs: [
+            {
+                title: "Help a trader sort stock",
+                reward: 6500,
+                energy: 15,
+                xp: 20,
+                reputation: 4
+            },
+            {
+                title: "Record daily sales",
+                reward: 8000,
+                energy: 16,
+                xp: 24,
+                reputation: 4
+            }
+        ]
+    },
+
+    "ibadan-tech": {
+        city: "ibadan",
+        name: "Creative Workspace",
+        icon: "💻",
+        description: "Local entrepreneurs need websites and help with digital tools.",
+        npc: "Femi",
+        jobs: [
+            {
+                title: "Create a business flyer",
+                reward: 7000,
+                energy: 14,
+                xp: 22,
+                reputation: 3
+            },
+            {
+                title: "Set up a business webpage",
+                reward: 12000,
+                energy: 21,
+                xp: 30,
+                reputation: 5
+            }
+        ]
+    },
+
+    "ibadan-transport": {
+        city: "ibadan",
+        name: "Mokola Junction",
+        icon: "🚌",
+        description: "A busy connection point for commuters and local deliveries.",
+        npc: "Bayo",
+        jobs: [
+            {
+                title: "Coordinate a local delivery",
+                reward: 7000,
+                energy: 16,
+                xp: 22,
+                reputation: 4
+            },
+            {
+                title: "Record parcel dispatches",
+                reward: 8500,
+                energy: 18,
+                xp: 25,
+                reputation: 4
+            }
+        ]
+    },
+
+    /* PORT HARCOURT */
+
+    "ph-home": {
+        city: "port-harcourt",
+        name: "GRA Residence",
+        icon: "🏠",
+        description: "Plan your day in the Garden City and prepare for new work.",
+        npc: null,
+        jobs: []
+    },
+
+    "ph-business": {
+        city: "port-harcourt",
+        name: "Business District",
+        icon: "🏢",
+        description: "Explore professional services and business support opportunities.",
+        npc: "Amaka",
+        jobs: [
+            {
+                title: "Prepare an operations report",
+                reward: 15000,
+                energy: 22,
+                xp: 32,
+                reputation: 5
+            },
+            {
+                title: "Organise customer records",
+                reward: 10500,
+                energy: 18,
+                xp: 26,
+                reputation: 4
+            }
+        ]
+    },
+
+    "ph-market": {
+        city: "port-harcourt",
+        name: "Mile 1 Market",
+        icon: "🛍️",
+        description: "Support traders with stock, sales and customer orders.",
+        npc: "Chika",
+        jobs: [
+            {
+                title: "Record market sales",
+                reward: 7500,
+                energy: 15,
+                xp: 22,
+                reputation: 3
+            },
+            {
+                title: "Arrange a wholesale order",
+                reward: 11000,
+                energy: 19,
+                xp: 28,
+                reputation: 4
+            }
+        ]
+    },
+
+    "ph-transport": {
+        city: "port-harcourt",
+        name: "Waterfront Logistics",
+        icon: "🚚",
+        description: "Help coordinate parcel movement and logistics tasks.",
+        npc: "Tamuno",
+        jobs: [
+            {
+                title: "Track a parcel delivery",
+                reward: 8500,
+                energy: 17,
+                xp: 24,
+                reputation: 4
+            },
+            {
+                title: "Prepare a dispatch schedule",
+                reward: 11500,
+                energy: 20,
+                xp: 29,
+                reputation: 5
+            }
+        ]
+    },
+
+    /* BENIN CITY */
+
+    "benin-home": {
+        city: "benin-city",
+        name: "Ring Road Home",
+        icon: "🏠",
+        description: "Begin your day surrounded by the city's history and enterprise.",
+        npc: null,
+        jobs: []
+    },
+
+    "benin-market": {
+        city: "benin-city",
+        name: "New Benin Market",
+        icon: "🛍️",
+        description: "Work with merchants and find opportunities in local trade.",
+        npc: "Osas",
+        jobs: [
+            {
+                title: "Update a merchant's stock list",
+                reward: 7000,
+                energy: 15,
+                xp: 22,
+                reputation: 3
+            },
+            {
+                title: "Prepare customer orders",
+                reward: 9000,
+                energy: 17,
+                xp: 25,
+                reputation: 4
+            }
+        ]
+    },
+
+    "benin-tech": {
+        city: "benin-city",
+        name: "Digital Skills Centre",
+        icon: "💻",
+        description: "Help growing businesses establish their digital presence.",
+        npc: "Efe",
+        jobs: [
+            {
+                title: "Design a business homepage",
+                reward: 12500,
+                energy: 21,
+                xp: 30,
+                reputation: 5
+            },
+            {
+                title: "Create an online product catalogue",
+                reward: 10000,
+                energy: 18,
+                xp: 27,
+                reputation: 4
+            }
+        ]
+    },
+
+    "benin-business": {
+        city: "benin-city",
+        name: "Commercial District",
+        icon: "🏢",
+        description: "Help businesses organise their records and serve customers.",
+        npc: "Osayande",
+        jobs: [
+            {
+                title: "Organise a customer database",
+                reward: 11000,
+                energy: 19,
+                xp: 28,
+                reputation: 4
+            },
+            {
+                title: "Prepare a sales summary",
+                reward: 9500,
+                energy: 17,
+                xp: 25,
+                reputation: 4
+            }
+        ]
+    },
+
+    /* ONITSHA */
+
+    "onitsha-home": {
+        city: "onitsha",
+        name: "Onitsha Residence",
+        icon: "🏠",
+        description: "Get ready for another day of deals, trade and opportunity.",
+        npc: null,
+        jobs: []
+    },
+
+    "onitsha-market": {
+        city: "onitsha",
+        name: "Main Market",
+        icon: "🛍️",
+        description: "A commercial powerhouse full of stock, sales and merchant tasks.",
+        npc: "Mr. Okeke",
+        jobs: [
+            {
+                title: "Prepare a stock inventory",
+                reward: 9000,
+                energy: 17,
+                xp: 25,
+                reputation: 4
+            },
+            {
+                title: "Coordinate a customer order",
+                reward: 11500,
+                energy: 20,
+                xp: 29,
+                reputation: 5
+            }
+        ]
+    },
+
+    "onitsha-transport": {
+        city: "onitsha",
+        name: "Transport Terminal",
+        icon: "🚌",
+        description: "Help coordinate goods moving between customers and traders.",
+        npc: "Chinedu",
+        jobs: [
+            {
+                title: "Prepare a dispatch record",
+                reward: 8500,
+                energy: 17,
+                xp: 24,
+                reputation: 4
+            },
+            {
+                title: "Coordinate a parcel movement",
+                reward: 12000,
+                energy: 21,
+                xp: 30,
+                reputation: 5
+            }
+        ]
+    },
+
+    "onitsha-tech": {
+        city: "onitsha",
+        name: "Business Tech Corner",
+        icon: "💻",
+        description: "Help traders use websites and digital tools to reach more customers.",
+        npc: "Adaeze",
+        jobs: [
+            {
+                title: "Create a product catalogue",
+                reward: 11000,
+                energy: 19,
+                xp: 28,
+                reputation: 4
+            },
+            {
+                title: "Set up a business webpage",
+                reward: 14500,
+                energy: 23,
+                xp: 33,
+                reputation: 5
+            }
+        ]
+    }
+};
+
+/* ==========================================
+   4. NPC DIRECTORY
+   ========================================== */
+
+const npcs = {
+    "Mama Bisi": {
+        icon: "👩🏾‍🦱",
+        role: "Trader",
+        text: "I need reliable people who can source items quickly."
+    },
+
+    "Tunde": {
+        icon: "🧑🏾‍💻",
+        role: "Developer",
+        text: "Small businesses need digital help every day."
+    },
+
+    "Emeka": {
+        icon: "🧑🏾",
+        role: "Logistics",
+        text: "If you are dependable, there is always a delivery."
+    },
+
+    "Aunty Kemi": {
+        icon: "👩🏾‍🍳",
+        role: "Food vendor",
+        text: "Good service brings repeat customers."
+    },
+
+    "Sarah": {
+        icon: "👩🏾‍💼",
+        role: "Business consultant",
+        text: "Professional clients pay more, but they expect quality."
+    },
+
+    "Zainab": {
+        icon: "👩🏾‍💼",
+        role: "Business analyst",
+        text: "Good preparation makes a professional stand out."
+    },
+
+    "Hauwa": {
+        icon: "👩🏾‍🦱",
+        role: "Market trader",
+        text: "Accurate stock records help a business grow."
+    },
+
+    "David": {
+        icon: "🧑🏾‍💻",
+        role: "Tech founder",
+        text: "A good portfolio can open doors to better projects."
+    },
+
+    "Mama Ronke": {
+        icon: "👩🏾‍🦱",
+        role: "Trader",
+        text: "Every business needs someone who can be trusted."
+    },
+
+    "Femi": {
+        icon: "🧑🏾‍🎨",
+        role: "Digital creative",
+        text: "Local businesses need better ways to reach customers."
+    },
+
+    "Bayo": {
+        icon: "🧑🏾",
+        role: "Transport coordinator",
+        text: "Planning ahead makes deliveries run more smoothly."
+    },
+
+    "Amaka": {
+        icon: "👩🏾‍💼",
+        role: "Operations specialist",
+        text: "Good records make difficult work easier."
+    },
+
+    "Chika": {
+        icon: "👩🏾‍🦱",
+        role: "Market trader",
+        text: "Customers remember businesses that serve them well."
+    },
+
+    "Tamuno": {
+        icon: "🧑🏾",
+        role: "Logistics coordinator",
+        text: "Reliable updates help customers trust a delivery service."
+    },
+
+    "Osas": {
+        icon: "🧑🏾",
+        role: "Merchant",
+        text: "Organised stock helps me serve customers faster."
+    },
+
+    "Efe": {
+        icon: "🧑🏾‍💻",
+        role: "Web designer",
+        text: "Digital skills can help small businesses grow."
+    },
+
+    "Osayande": {
+        icon: "🧑🏾‍💼",
+        role: "Business manager",
+        text: "A clear sales report helps us make better decisions."
+    },
+
+    "Mr. Okeke": {
+        icon: "🧑🏾",
+        role: "Wholesaler",
+        text: "Trade moves faster when everyone knows what is in stock."
+    },
+
+    "Chinedu": {
+        icon: "🧑🏾",
+        role: "Dispatch coordinator",
+        text: "Every parcel needs the right record and destination."
+    },
+
+    "Adaeze": {
+        icon: "👩🏾‍💻",
+        role: "Digital consultant",
+        text: "Let's help more local businesses get online."
+    }
+};
+
+/* ==========================================
+   5. HELPERS
+   ========================================== */
+
+function money(amount) {
+    return "₦" + Math.round(amount).toLocaleString("en-NG");
+}
+
+function currentCity() {
+    return cities[game.currentCity] || cities.lagos;
+}
+
+function currentLocation() {
+    return locations[game.currentLocation] || locations.home;
+}
+
+function cityLocations() {
+    return Object.entries(locations).filter(
+        ([, location]) => location.city === game.currentCity
+    );
 }
 
 function log(message) {
-game.logs.unshift({
-day: game.day,
-message
-});
-
-game.logs = game.logs.slice(0, 30);
-saveGame();
-renderLog();
-
+    game.logs.unshift(`Day ${game.day} — ${message}`);
+    game.logs = game.logs.slice(0, 20);
 }
 
-function renderCityTheme() {
-const city = getCity();
+function showMessage(message) {
+    const element = document.getElementById("message");
 
-document.documentElement.dataset.theme = game.currentCity;
-setText("mapTitle", `${city.name} City Map`);
-setText("cityMood", city.mood);
-setText("cityStatus", `● ${city.status}`);
-document.title = `Japa Lifestyle — ${city.name}`;
+    if (!element) return;
 
-}
-
-function renderCityCards() {
-const container = document.getElementById(“cityCards”);
-
-if (!container) return;
-container.innerHTML = "";
-Object.entries(cities).forEach(([id, city]) => {
-    const card = document.createElement("button");
-    const isCurrent = game.currentCity === id;
-    card.type = "button";
-    card.className = `city-card${isCurrent ? " active" : ""}`;
-    card.style.setProperty("--city-image", `url("${city.image}")`);
-    card.setAttribute("aria-pressed", String(isCurrent));
-    card.innerHTML = `
-        <div class="city-card-top">
-            <span class="city-card-icon">${city.icon}</span>
-            <span class="city-card-badge">
-                ${isCurrent ? "CURRENT CITY" : "EXPLORE"}
-            </span>
-        </div>
-        <h3>${city.name}</h3>
-        <p>${city.description}</p>
-        <span class="city-card-action">
-            ${isCurrent ? "You're here ✓" : "Travel here →"}
-            <span>${isCurrent ? "" : "10 ⚡"}</span>
-        </span>
-    `;
-    card.addEventListener("click", () => {
-        if (isCurrent) {
-            showMessage(`You're already in ${city.name}. Explore its locations.`);
-            return;
-        }
-        travelToCity(id);
-    });
-    container.appendChild(card);
-});
-
-}
-
-function renderStats() {
-setText(“cash”, money(game.cash));
-setText(“energy”, ${game.energy}%);
-setText(“reputation”, String(game.reputation));
-setText(“xp”, ${game.xp} XP);
-setText(“day”, String(game.day));
-setText(“fundAmount”, money(game.japaFund));
-
-const energyBar = document.getElementById("energyBar");
-if (energyBar) {
-    energyBar.style.width = `${game.energy}%`;
-    energyBar.style.background = game.energy < 25
-        ? "var(--danger)"
-        : "var(--success)";
-}
-const progress = Math.min(100, (game.japaFund / FUND_GOAL) * 100);
-const fundProgress = document.getElementById("fundProgress");
-if (fundProgress) {
-    fundProgress.style.width = `${progress}%`;
-}
-setText("fundPercent", `${Math.floor(progress)}% of your goal`);
-const saveButton = document.getElementById("saveButton");
-if (saveButton) {
-    saveButton.disabled = game.cash < 5000 || game.japaFund >= FUND_GOAL;
-}
-const restButton = document.getElementById("restButton");
-if (restButton) {
-    restButton.disabled = game.energy >= 100;
-}
-
-}
-
-function makeButton(label, className, onClick) {
-const button = document.createElement(“button”);
-
-button.type = "button";
-button.className = className;
-button.textContent = label;
-button.addEventListener("click", onClick);
-return button;
-
-}
-
-function renderMap() {
-const map = document.getElementById(“cityMap”);
-
-if (!map) return;
-map.innerHTML = "";
-getCity().locations.forEach(location => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `place${game.currentLocation === location.id ? " active" : ""}`;
-    button.setAttribute("aria-pressed", String(game.currentLocation === location.id));
-    button.innerHTML = `
-        <span class="place-icon">${location.icon}</span>
-        <strong>${location.name}</strong>
-        <small>${location.type}</small>
-    `;
-    button.addEventListener("click", () => moveToLocation(location.id));
-    map.appendChild(button);
-});
-
-}
-
-function renderLocation() {
-const location = getLocation();
-
-setText("currentLocationName", location.name);
-setText("locationDescription", location.description);
-const panel = document.getElementById("locationPanel");
-if (!panel) return;
-panel.innerHTML = "";
-if (location.type === "Rest") {
-    panel.appendChild(
-        makeButton("Rest here (+25 energy)", "button button-secondary", () => rest(25))
-    );
-    panel.appendChild(
-        makeButton("Save progress", "button button-ghost", () => saveGame(true))
-    );
-    return;
-}
-const availableJobs = location.jobs.filter(
-    job => !game.completedJobs.includes(`${game.currentCity}:${job.id}`)
-);
-if (!availableJobs.length) {
-    const note = document.createElement("p");
-    note.className = "muted";
-    note.textContent = "You've completed the available task here. Explore another location or city.";
-    panel.appendChild(note);
-    return;
-}
-availableJobs.forEach(job => {
-    const wrapper = document.createElement("div");
-    wrapper.className = "opportunity-item";
-    wrapper.innerHTML = `
-        <strong>${job.title}</strong>
-        <p>${job.description}</p>
-        <div class="reward-row">
-            <span class="reward-tag">${money(job.pay)} · +${job.xp} XP</span>
-        </div>
-    `;
-    const button = makeButton(
-        "Accept & complete task",
-        "button button-primary",
-        () => completeJob(job)
-    );
-    button.style.marginTop = "10px";
-    button.style.width = "100%";
-    wrapper.appendChild(button);
-    panel.appendChild(wrapper);
-});
-
-}
-
-function renderAvailableJobs() {
-const target = document.getElementById(“opportunity”);
-
-if (!target) return;
-const jobs = getCity().locations
-    .flatMap(location => location.jobs.map(job => ({
-        ...job,
-        locationName: location.name,
-        locationId: location.id
-    })))
-    .filter(job => !game.completedJobs.includes(`${game.currentCity}:${job.id}`))
-    .slice(0, 3);
-target.innerHTML = "";
-if (!jobs.length) {
-    target.innerHTML = `
-        <div class="empty-state">
-            You've completed the listed opportunities in ${getCity().name}.
-            Travel to another city to discover new tasks.
-        </div>
-    `;
-    return;
-}
-jobs.forEach(job => {
-    const item = document.createElement("div");
-    item.className = "opportunity-item";
-    item.innerHTML = `
-        <strong>${job.title}</strong>
-        <p>${job.locationName} · ${job.description}</p>
-        <div class="reward-row">
-            <span class="reward-tag">${money(job.pay)} · +${job.xp} XP</span>
-        </div>
-    `;
-    const button = makeButton("Go to task", "button button-secondary", () => {
-        moveToLocation(job.locationId);
-        document.getElementById("locationPanel")?.scrollIntoView({
-            behavior: "smooth",
-            block: "nearest"
-        });
-    });
-    button.style.marginTop = "10px";
-    item.appendChild(button);
-    target.appendChild(item);
-});
-
-}
-
-function renderNPCs() {
-const target = document.getElementById(“npcs”);
-
-if (!target) return;
-target.innerHTML = "";
-(characters[game.currentCity] || []).forEach(person => {
-    const key = `${game.currentCity}:${person.name}`;
-    const alreadyTalked = game.talkedTo.includes(key);
-    const card = document.createElement("div");
-    card.className = "npc-card";
-    const avatar = document.createElement("div");
-    avatar.className = "npc-avatar";
-    avatar.textContent = person.icon;
-    const info = document.createElement("div");
-    info.className = "npc-info";
-    const name = document.createElement("strong");
-    name.textContent = person.name;
-    const role = document.createElement("small");
-    role.textContent = person.role;
-    info.append(name, role);
-    const button = makeButton(
-        alreadyTalked ? "Chatted ✓" : "Talk",
-        `button ${alreadyTalked ? "button-ghost" : "button-secondary"}`,
-        () => talkTo(person, key)
-    );
-    button.disabled = alreadyTalked;
-    card.append(avatar, info, button);
-    target.appendChild(card);
-});
-
-}
-
-function renderMissions() {
-const target = document.getElementById(“missions”);
-
-if (!target) return;
-target.innerHTML = "";
-const activeMissions = game.missions.filter(mission => !mission.completed);
-if (!activeMissions.length) {
-    target.innerHTML = `
-        <div class="empty-state">
-            No active missions yet. Complete a task or talk to someone to begin.
-        </div>
-    `;
-    return;
-}
-activeMissions.forEach(mission => {
-    const card = document.createElement("div");
-    card.className = "mission-card";
-    const top = document.createElement("div");
-    top.className = "mission-top";
-    const heading = document.createElement("div");
-    const title = document.createElement("h3");
-    title.textContent = mission.title;
-    const description = document.createElement("p");
-    description.textContent = mission.description;
-    heading.append(title, description);
-    const reward = document.createElement("span");
-    reward.className = "mission-reward";
-    reward.textContent = `+${mission.rewardXp} XP`;
-    top.append(heading, reward);
-    const button = makeButton(
-        "Complete mission",
-        "button button-primary",
-        () => completeMission(mission.id)
-    );
-    card.append(top, button);
-    target.appendChild(card);
-});
-
-}
-
-function renderLog() {
-const target = document.getElementById(“journeyLog”);
-
-if (!target) return;
-target.innerHTML = "";
-if (!game.logs.length) {
-    const item = document.createElement("li");
-    item.textContent = "Your story starts here. Explore a city and make your first move.";
-    target.appendChild(item);
-    return;
-}
-game.logs.slice(0, 10).forEach(entry => {
-    const item = document.createElement("li");
-    const day = document.createElement("span");
-    day.className = "log-time";
-    day.textContent = `DAY ${entry.day}`;
-    const text = document.createElement("span");
-    text.textContent = entry.message;
-    item.append(day, text);
-    target.appendChild(item);
-});
-
+    element.textContent = message;
 }
 
 function spendEnergy(amount) {
-if (game.energy < amount) {
-showMessage(“You’re low on energy. Rest before taking on more tasks.”, “error”);
-return false;
+    if (game.energy < amount) {
+        showMessage("You're low on energy. Rest before taking on more work.");
+        return false;
+    }
+
+    game.energy -= amount;
+    return true;
 }
 
-game.energy -= amount;
-return true;
+/* ==========================================
+   6. CITY THEMING
+   ========================================== */
 
+function renderCityTheme() {
+    const city = currentCity();
+
+    document.body.dataset.theme = game.currentCity;
+    document.documentElement.dataset.theme = game.currentCity;
+
+    document.getElementById("cityName").textContent = city.name;
+    document.getElementById("cityIcon").textContent = city.icon;
+    document.getElementById("cityMood").textContent =
+        `${city.mood} · ${city.description}`;
+
+    document.getElementById("mapTitle").textContent = city.mapTitle;
+    document.getElementById("cityStatus").textContent = city.status;
+
+    const themeColors = {
+        lagos: "#101815",
+        abuja: "#111b18",
+        ibadan: "#211613",
+        "port-harcourt": "#0c1b21",
+        "benin-city": "#201513",
+        onitsha: "#171912"
+    };
+
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+
+    if (metaTheme) {
+        metaTheme.content = themeColors[game.currentCity] || themeColors.lagos;
+    }
+
+    const selector = document.getElementById("citySelector");
+
+    if (selector) {
+        selector.value = game.currentCity;
+    }
 }
 
-function moveToLocation(locationId) {
-const location = getCity().locations.find(item => item.id === locationId);
+function setupCitySelector() {
+    const identity = document.querySelector(".city-identity");
 
-if (!location) return;
-if (game.currentLocation === locationId) {
-    showMessage(`You're already at ${location.name}.`);
-    return;
-}
-if (!spendEnergy(3)) return;
-game.currentLocation = locationId;
-log(`You travelled to ${location.name} in ${getCity().name}.`);
-showMessage(`You arrived at ${location.name}.`, "success");
-render();
+    if (!identity || document.getElementById("citySelector")) return;
 
+    const wrapper = document.createElement("label");
+    wrapper.className = "city-selector-wrap";
+    wrapper.htmlFor = "citySelector";
+
+    const select = document.createElement("select");
+    select.id = "citySelector";
+    select.setAttribute("aria-label", "Travel to another city");
+
+    Object.entries(cities).forEach(([id, city]) => {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = city.name;
+        select.appendChild(option);
+    });
+
+    const label = document.createElement("span");
+    label.className = "eyebrow";
+    label.textContent = "TRAVEL TO";
+
+    wrapper.append(label, select);
+    identity.appendChild(wrapper);
+
+    select.value = game.currentCity;
+
+    select.addEventListener("change", () => {
+        travelToCity(select.value);
+    });
 }
 
 function travelToCity(cityId) {
-const city = cities[cityId];
+    if (!cities[cityId] || cityId === game.currentCity) return;
 
-if (!city) return;
-if (game.energy < TRAVEL_ENERGY) {
-    showMessage("You need at least 10 energy to travel. Rest first.", "error");
-    return;
-}
-game.energy -= TRAVEL_ENERGY;
-game.currentCity = cityId;
-game.currentLocation = city.locations[0].id;
-log(`You travelled to ${city.name}. A new chapter begins.`);
-showMessage(`Welcome to ${city.name}! Explore and find opportunities.`, "success");
-render();
+    if (!spendEnergy(10)) {
+        document.getElementById("citySelector").value = game.currentCity;
+        return;
+    }
 
-}
+    game.currentCity = cityId;
+    game.currentLocation = cities[cityId].startLocation;
+    game.day++;
 
-function completeJob(job) {
-const key = ${game.currentCity}:${job.id};
+    log(`Travelled to ${cities[cityId].name}.`);
 
-if (game.completedJobs.includes(key)) {
-    showMessage("You've already completed this task in this city.", "error");
-    return;
-}
-if (!spendEnergy(job.energy)) return;
-game.cash += job.pay;
-game.xp += job.xp;
-game.reputation += job.rep;
-game.completedJobs.push(key);
-game.missions.unshift({
-    id: game.missionSequence++,
-    title: `Reflect on: ${job.title}`,
-    description: "Review what went well, then complete this mission for bonus experience.",
-    rewardXp: 5,
-    completed: false
-});
-log(`Completed "${job.title}" in ${getCity().name}: earned ${money(job.pay)}, +${job.xp} XP, and +${job.rep} reputation.`);
-showMessage(`Nice work! You earned ${money(job.pay)}.`, "success");
-render();
+    showMessage(
+        `Welcome to ${cities[cityId].name}! ${cities[cityId].mood} awaits.`
+    );
 
+    render();
 }
 
-function talkTo(person, key) {
-if (game.talkedTo.includes(key)) return;
+/* ==========================================
+   7. CITY MAP
+   ========================================== */
 
-game.talkedTo.push(key);
-game.reputation += 1;
-game.xp += 3;
-log(`You spoke with ${person.name} (${person.role}) in ${getCity().name}. "${person.line}"`);
-showMessage(`${person.name}: “${person.line}” (+3 XP, +1 reputation)`, "success");
-render();
+function renderMap() {
+    const map = document.getElementById("cityMap");
+    map.innerHTML = "";
 
+    cityLocations().forEach(([id, location]) => {
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.className = "place";
+
+        if (game.currentLocation === id) {
+            button.classList.add("active");
+            button.setAttribute("aria-current", "location");
+        }
+
+        button.innerHTML = `
+            <span class="place-icon">${location.icon}</span>
+            <span class="place-name">${location.name}</span>
+            <span class="place-small">
+                ${game.currentLocation === id ? "YOU ARE HERE" : "Explore"}
+            </span>
+        `;
+
+        button.addEventListener("click", () => travelTo(id));
+
+        map.appendChild(button);
+    });
 }
 
-function completeMission(id) {
-const mission = game.missions.find(item => item.id === id && !item.completed);
+/* ==========================================
+   8. TRAVEL BETWEEN NEIGHBOURHOODS
+   ========================================== */
 
-if (!mission) return;
-mission.completed = true;
-game.xp += mission.rewardXp;
-game.reputation += 1;
-log(`Mission completed: ${mission.title}. Bonus +${mission.rewardXp} XP and +1 reputation.`);
-showMessage("Mission complete. Keep building your story!", "success");
-render();
+function travelTo(locationId) {
+    const destination = locations[locationId];
 
+    if (!destination || destination.city !== game.currentCity) return;
+    if (game.currentLocation === locationId) return;
+
+    if (!spendEnergy(5)) return;
+
+    game.currentLocation = locationId;
+    game.day++;
+
+    log(`Travelled to ${destination.name} in ${currentCity().name}.`);
+
+    showMessage(`You arrived at ${destination.name}.`);
+
+    render();
 }
 
-function saveToFund() {
-if (game.japaFund >= FUND_GOAL) {
-showMessage(“You’ve reached your fictional Japa Fund goal. Great work!”, “success”);
-return;
+/* ==========================================
+   9. LOCATION PANEL & AVAILABLE JOBS
+   ========================================== */
+
+function renderLocation() {
+    const location = currentLocation();
+    const panel = document.getElementById("locationPanel");
+
+    document.getElementById("locationText").textContent =
+        `You are at ${location.name}, ${currentCity().name}.`;
+
+    panel.innerHTML = `
+        <div class="location-title">
+            ${location.icon} ${location.name}
+        </div>
+        <div class="location-description">
+            ${location.description}
+        </div>
+    `;
 }
 
-if (game.cash < 5000) {
-    showMessage("You need at least ₦5,000 cash to save that amount.", "error");
-    return;
+function renderAvailableJobs() {
+    const location = currentLocation();
+    const panel = document.getElementById("locationPanel");
+
+    if (!location.jobs || location.jobs.length === 0) {
+        panel.insertAdjacentHTML("beforeend", `
+            <div class="jobs">
+                <p class="muted">No jobs available here right now. Explore another location.</p>
+            </div>
+        `);
+        return;
+    }
+
+    const jobsHTML = location.jobs.map((job, index) => `
+        <div class="mission">
+            <div>
+                <div class="mission-title">${job.title}</div>
+                <div class="mission-details">
+                    Reward: ${money(job.reward)}
+                    · Energy: ${job.energy}
+                    · XP: ${job.xp}
+                </div>
+            </div>
+            <button class="mission-button" data-job-index="${index}">
+                Accept
+            </button>
+        </div>
+    `).join("");
+
+    panel.insertAdjacentHTML("beforeend", `
+        <div class="jobs">
+            <h3>Available Jobs</h3>
+            ${jobsHTML}
+        </div>
+    `);
+
+    panel.querySelectorAll("[data-job-index]").forEach(button => {
+        button.addEventListener("click", () => {
+            acceptMission(Number(button.dataset.jobIndex));
+        });
+    });
 }
-const amount = Math.min(5000, game.cash, FUND_GOAL - game.japaFund);
-game.cash -= amount;
-game.japaFund += amount;
-log(`You saved ${money(amount)} in your fictional Japa Fund.`);
-showMessage(`You saved ${money(amount)}. Small steps add up!`, "success");
-render();
 
+/* ==========================================
+   10. NPC SYSTEM
+   ========================================== */
+
+function renderNPCs() {
+    const location = currentLocation();
+    const container = document.getElementById("npcs");
+    const opportunity = document.getElementById("opportunity");
+
+    if (!location.npc || !npcs[location.npc]) {
+        container.innerHTML = `
+            <p class="muted">Enjoy the neighbourhood. Visit another spot to meet people.</p>
+        `;
+
+        opportunity.innerHTML = `
+            <p class="muted">Explore the city to discover your next opportunity.</p>
+        `;
+
+        return;
+    }
+
+    const npc = npcs[location.npc];
+
+    container.innerHTML = `
+        <div class="npc-card">
+            <div class="npc-info">
+                <div class="npc-avatar">${npc.icon}</div>
+                <div>
+                    <strong>${location.npc}</strong>
+                    <div class="npc-role">${npc.role}</div>
+                    <p>${npc.text}</p>
+                </div>
+            </div>
+
+            <button id="talkButton" class="secondary-button">
+                Talk
+            </button>
+        </div>
+    `;
+
+    document.getElementById("talkButton").addEventListener(
+        "click",
+        talkToNPC
+    );
+
+    opportunity.innerHTML = `
+        <div class="opportunity-card">
+            <strong>${npc.role} opportunity</strong>
+            <p class="muted">${npc.text}</p>
+            <p class="mission-details">
+                Visit the Available Jobs section to find work.
+            </p>
+        </div>
+    `;
 }
 
-function rest(amount = 40) {
-if (game.energy >= 100) {
-showMessage(“Your energy is already full. You’re ready to go!”, “success”);
-return;
+function talkToNPC() {
+    const location = currentLocation();
+
+    if (!location.npc || !npcs[location.npc]) return;
+
+    game.reputation += 2;
+
+    log(`You spoke with ${location.npc}. Reputation +2.`);
+
+    showMessage(
+        `${location.npc}: "${npcs[location.npc].text}" Reputation +2.`
+    );
+
+    render();
 }
 
-const before = game.energy;
-game.energy = Math.min(100, game.energy + amount);
-const gained = game.energy - before;
-game.day += 1;
-log(`You rested and recovered ${gained} energy. It's now Day ${game.day}.`);
-showMessage(`You recovered ${gained} energy. A new day, a fresh start.`, "success");
-render();
+/* ==========================================
+   11. ACCEPT MISSIONS
+   ========================================== */
 
+function acceptMission(index) {
+    const location = currentLocation();
+    const job = location.jobs?.[index];
+
+    if (!job) {
+        showMessage("That job is no longer available.");
+        return;
+    }
+
+    // Prevent repeatedly accepting the same job while it is active.
+    const alreadyAccepted = game.missions.some(
+        mission =>
+            mission.title === job.title &&
+            mission.locationId === game.currentLocation
+    );
+
+    if (alreadyAccepted) {
+        showMessage("You've already accepted this job. Complete it first.");
+        return;
+    }
+
+    if (game.energy < job.energy) {
+        showMessage("Not enough energy for this job. Rest first.");
+        return;
+    }
+
+    game.missions.push({
+        title: job.title,
+        reward: job.reward,
+        energy: job.energy,
+        xp: job.xp,
+        reputation: job.reputation,
+        locationId: game.currentLocation,
+        city: game.currentCity
+    });
+
+    log(`Accepted "${job.title}" in ${location.name}.`);
+
+    showMessage(`Mission accepted: ${job.title}.`);
+
+    render();
 }
 
-function resetGame() {
-const confirmed = window.confirm(
-“Start a new game? This will erase your saved Japa Lifestyle progress on this device.”
-);
+/* ==========================================
+   12. ACTIVE MISSIONS
+   ========================================== */
 
-if (!confirmed) return;
-game = createNewGame();
-game.logs.push({
-    day: 1,
-    message: "A new journey begins in Lagos. Make your first move!"
-});
-saveGame();
-render();
-showMessage("New game started. Welcome to Lagos!", "success");
+function renderMissions() {
+    const container = document.getElementById("missions");
 
+    if (game.missions.length === 0) {
+        container.innerHTML = `
+            <p class="muted">
+                No active missions yet. Explore a location and accept a job.
+            </p>
+        `;
+        return;
+    }
+
+    container.innerHTML = game.missions.map((mission, index) => `
+        <div class="mission">
+            <div>
+                <div class="mission-title">${mission.title}</div>
+                <div class="mission-details">
+                    ${cities[mission.city]?.name || "Nigeria"}
+                    · Reward: ${money(mission.reward)}
+                    · +${mission.reputation} reputation
+                    · +${mission.xp} XP
+                </div>
+            </div>
+
+            <button class="mission-button"
+                data-complete-index="${index}"
+                ${game.energy < mission.energy ? "disabled" : ""}>
+                Complete
+            </button>
+        </div>
+    `).join("");
+
+    container.querySelectorAll("[data-complete-index]").forEach(button => {
+        button.addEventListener("click", () => {
+            completeMission(Number(button.dataset.completeIndex));
+        });
+    });
 }
+
+function completeMission(index) {
+    const mission = game.missions[index];
+
+    if (!mission) {
+        showMessage("Mission not found.");
+        return;
+    }
+
+    if (!spendEnergy(mission.energy)) return;
+
+    game.cash += mission.reward;
+    game.reputation += mission.reputation;
+    game.xp += mission.xp;
+
+    // In-game savings bonus: 25% of the mission reward.
+    const savings = Math.round(mission.reward * 0.25);
+
+    game.japaFund += savings;
+    game.missions.splice(index, 1);
+    game.day++;
+
+    log(
+        `Completed "${mission.title}". Earned ${money(mission.reward)} and added ${money(savings)} to the Japa Fund.`
+    );
+
+    showMessage(
+        `Mission complete! ${money(mission.reward)} earned; ${money(savings)} added to your Japa Fund.`
+    );
+
+    render();
+}
+
+/* ==========================================
+   13. JAPA SAVINGS
+   ========================================== */
+
+function saveMoney() {
+    const amount = 5000;
+
+    if (game.cash < amount) {
+        showMessage("You need at least ₦5,000 in your wallet to save.");
+        return;
+    }
+
+    game.cash -= amount;
+    game.japaFund += amount;
+
+    log(`Saved ${money(amount)} toward your Japa Fund.`);
+
+    showMessage(`${money(amount)} moved into your Japa Fund.`);
+
+    render();
+}
+
+/* ==========================================
+   14. REST & ENERGY
+   ========================================== */
+
+function rest() {
+    if (game.energy >= 100) {
+        showMessage("You're already fully rested. Time to explore!");
+        return;
+    }
+
+    const recovered = Math.min(45, 100 - game.energy);
+
+    game.energy += recovered;
+    game.day++;
+
+    log(`Rested and recovered ${recovered} energy.`);
+
+    showMessage(`You rested and recovered ${recovered} energy.`);
+
+    render();
+}
+
+/* ==========================================
+   15. PLAYER STATS & FUND PROGRESS
+   ========================================== */
+
+function renderStats() {
+    document.getElementById("cash").textContent = money(game.cash);
+    document.getElementById("energy").textContent = game.energy;
+    document.getElementById("reputation").textContent = game.reputation;
+    document.getElementById("xp").textContent = game.xp;
+    document.getElementById("japaFund").textContent = money(game.japaFund);
+    document.getElementById("day").textContent = game.day;
+    document.getElementById("fundAmount").textContent = money(game.japaFund);
+
+    const progress = Math.min(
+        100,
+        (game.japaFund / FUND_TARGET) * 100
+    );
+
+    const progressBar = document.querySelector(".progress-bar");
+    const progressFill = document.getElementById("fundProgress");
+
+    progressFill.style.width = `${progress}%`;
+
+    if (progressBar) {
+        progressBar.setAttribute("aria-valuenow", String(
+            Math.min(FUND_TARGET, game.japaFund)
+        ));
+        progressBar.setAttribute("aria-valuemax", String(FUND_TARGET));
+    }
+}
+
+/* ==========================================
+   16. JOURNEY LOG
+   ========================================== */
+
+function renderLog() {
+    const container = document.getElementById("journeyLog");
+
+    if (game.logs.length === 0) {
+        container.innerHTML = `
+            <p class="muted">Your journey starts here. Make your first move.</p>
+        `;
+        return;
+    }
+
+    container.replaceChildren();
+
+    game.logs.forEach(entry => {
+        const element = document.createElement("div");
+        element.className = "log-entry";
+        element.textContent = entry;
+        container.appendChild(element);
+    });
+}
+
+/* ==========================================
+   17. MAIN RENDER
+   ========================================== */
 
 function render() {
-renderCityTheme();
-renderCityCards();
-renderStats();
-renderMap();
-renderLocation();
-renderAvailableJobs();
-renderNPCs();
-renderMissions();
-renderLog();
+    renderCityTheme();
+    renderStats();
+    renderMap();
+    renderLocation();
+    renderAvailableJobs();
+    renderNPCs();
+    renderMissions();
+    renderLog();
 
-saveGame();
-
+    // Autosave quietly. Do not overwrite the player's message.
+    saveGame();
 }
 
-function initialise() {
-const hadSave = loadGame();
+/* ==========================================
+   18. BUTTONS & STARTUP
+   ========================================== */
 
-if (!hadSave) {
-    game.logs.push({
-        day: 1,
-        message: "Welcome to Japa Lifestyle. Your story starts in Lagos."
-    });
+document.getElementById("saveButton").addEventListener(
+    "click",
+    saveMoney
+);
+
+document.getElementById("restButton").addEventListener(
+    "click",
+    rest
+);
+
+// Restore saved progress before showing the game.
+const hasSave = loadGame();
+
+if (!hasSave) {
+    log("You arrived in Lagos with ₦25,000. Your Japa story begins.");
 }
-document.getElementById("saveButton")
-    ?.addEventListener("click", saveToFund);
-document.getElementById("restButton")
-    ?.addEventListener("click", () => rest(40));
-document.getElementById("resetButton")
-    ?.addEventListener("click", resetGame);
-document.getElementById("clearLogButton")
-    ?.addEventListener("click", () => {
-        game.logs = [];
-        saveGame();
-        renderLog();
-        showMessage("Journey log cleared.", "success");
-    });
+
+setupCitySelector();
 render();
-
-}
-
-document.addEventListener(“DOMContentLoaded”, initialise);
