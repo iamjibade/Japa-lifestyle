@@ -32,69 +32,65 @@
 }
 
 /* LAGOS — THE HUSTLE */
-body[data-theme="lagos"] {
-    --bg: #101815;
-    --panel: rgba(19, 31, 27, 0.94);
-    --panel-light: #26372d;
-    --border: #435642;
-    --accent: #f5c542;
-    --accent-dark: #dda91c;
-    --glow: rgba(245, 197, 66, 0.2);
+/* Lagos: lively amber and green */
+:root,
+:root[data-theme="lagos"] {
+    --bg: #101713;
+    --panel: #19231d;
+    --panel-light: #243329;
+    --border: #3b4c3e;
+    --accent: #f2b84b;
+    --accent-dark: #d99727;
 }
 
-/* ABUJA — THE AMBITION */
-body[data-theme="abuja"] {
-    --bg: #111b18;
-    --panel: rgba(25, 40, 34, 0.96);
-    --panel-light: #2b4035;
-    --border: #496354;
-    --accent: #d9c39a;
-    --accent-dark: #bda273;
-    --glow: rgba(217, 195, 154, 0.18);
+/* Abuja: modern blue and silver */
+:root[data-theme="abuja"] {
+    --bg: #101820;
+    --panel: #192733;
+    --panel-light: #243848;
+    --border: #3b566a;
+    --accent: #77c8ed;
+    --accent-dark: #419bc7;
 }
 
-/* IBADAN — THE GRIND */
-body[data-theme="ibadan"] {
-    --bg: #211613;
-    --panel: rgba(43, 28, 23, 0.96);
-    --panel-light: #493027;
-    --border: #704a38;
-    --accent: #e4a16b;
-    --accent-dark: #c57a45;
-    --glow: rgba(228, 161, 107, 0.18);
+/* Ibadan: warm terracotta */
+:root[data-theme="ibadan"] {
+    --bg: #211713;
+    --panel: #30221c;
+    --panel-light: #403027;
+    --border: #634638;
+    --accent: #e7a16e;
+    --accent-dark: #c77c48;
 }
 
-/* PORT HARCOURT — THE RIVER CITY */
-body[data-theme="port-harcourt"] {
-    --bg: #0c1b21;
-    --panel: rgba(15, 35, 40, 0.96);
-    --panel-light: #1d3c41;
-    --border: #326366;
-    --accent: #59d2c1;
-    --accent-dark: #2ba99c;
-    --glow: rgba(89, 210, 193, 0.18);
+/* Port Harcourt: river and rainforest */
+:root[data-theme="port-harcourt"] {
+    --bg: #0c1b20;
+    --panel: #142a30;
+    --panel-light: #1d3b40;
+    --border: #31585a;
+    --accent: #65d8c0;
+    --accent-dark: #38b59a;
 }
 
-/* BENIN CITY — THE HERITAGE */
-body[data-theme="benin-city"] {
-    --bg: #201513;
-    --panel: rgba(43, 27, 25, 0.96);
-    --panel-light: #4a302b;
-    --border: #765044;
-    --accent: #dca56c;
-    --accent-dark: #b87940;
-    --glow: rgba(220, 165, 108, 0.2);
+/* Benin City: bronze and heritage */
+:root[data-theme="benin-city"] {
+    --bg: #201512;
+    --panel: #30201b;
+    --panel-light: #432b22;
+    --border: #654534;
+    --accent: #e5ad57;
+    --accent-dark: #bd8035;
 }
 
-/* ONITSHA — THE MARKETPLACE */
-body[data-theme="onitsha"] {
-    --bg: #171912;
-    --panel: rgba(32, 36, 24, 0.96);
-    --panel-light: #39402a;
-    --border: #596440;
-    --accent: #f1c54b;
-    --accent-dark: #d99b28;
-    --glow: rgba(241, 197, 75, 0.2);
+/* Onitsha: market gold */
+:root[data-theme="onitsha"] {
+    --bg: #171a12;
+    --panel: #24281b;
+    --panel-light: #323824;
+    --border: #505a36;
+    --accent: #d9d86b;
+    --accent-dark: #b4b44c;
 }
 
 /* RESET */
