@@ -11,7 +11,7 @@ icon: “🌆”,
 mood: “The hustle is real. Keep moving.”,
 description: “Fast-paced streets, big dreams, and plenty of ways to make a move.”,
 status: “The Hustle”,
-image: “images/cities/lagos.jpg”,
+image: “images/lagos.jpg”,
 locations: [
 {
 id: “home”,
@@ -120,7 +120,7 @@ abuja: {
     mood: "Plan smart. Move with purpose.",
     description: "A city of offices, calm avenues, and opportunities for organised minds.",
     status: "The Capital",
-    image: "images/cities/abuja.jpg",
+    image: "images/abuja.jpg",
     locations: [
         {
             id: "abuja-home",
@@ -192,7 +192,7 @@ ibadan: {
     mood: "Steady progress is still progress.",
     description: "A city with deep roots, student energy, and room to grow.",
     status: "The Red City",
-    image: "images/cities/ibadan.jpg",
+    image: "images/ibadan.jpg",
     locations: [
         {
             id: "ibadan-home",
@@ -264,7 +264,7 @@ ibadan: {
     mood: "Stay sharp. Build your network.",
     description: "A lively riverside city where practical skills can open doors.",
     status: "The Garden City",
-    image: "images/cities/port-harcourt.jpg",
+    image: "images/port-harcourt.jpg",
     locations: [
         {
             id: "ph-home",
@@ -336,7 +336,7 @@ ibadan: {
     mood: "Respect your roots. Create your path.",
     description: "A proud cultural city with local trade and creative possibilities.",
     status: "The Heart of Edo",
-    image: "images/cities/benin-city.jpg",
+    image: "images/benin-city.jpg",
     locations: [
         {
             id: "benin-home",
@@ -408,7 +408,7 @@ onitsha: {
     mood: "Trade smart. Think ahead.",
     description: "A commercial powerhouse full of movement, trade, and ambition.",
     status: "The Trade Hub",
-    image: "images/cities/onitsha.jpg",
+    image: "images/onitsha.jpg",
     locations: [
         {
             id: "onitsha-home",
