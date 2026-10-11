@@ -3,6 +3,7 @@
 /* ==========================================
    JAPA LIFESTYLE — WORLD ALPHA
    Nigerian Life Simulation Game
+   Powered by Ibrish Digital
    ========================================== */
 
 /* ==========================================
@@ -24,8 +25,6 @@ const game = {
     missions: [],
     logs: []
 };
-
-let messageTimeout = null;
 
 function saveGame(showFeedback = false) {
     try {
@@ -66,48 +65,28 @@ function loadGame() {
             throw new Error("Invalid save data");
         }
 
-        // Support older saves from the original Lagos prototype.
-        const oldLocationAliases = {
-            home: "home",
-            market: "market",
-            tech: "tech",
-            transport: "transport",
-            food: "food",
-            business: "business"
-        };
+        const cityId = cities[data.currentCity]
+            ? data.currentCity
+            : "lagos";
 
-        const migratedLocation =
-            oldLocationAliases[data.currentLocation] ||
-            data.currentLocation;
+        let locationId = data.currentLocation;
 
-        if (!locations[migratedLocation]) {
-            data.currentCity = "lagos";
-            data.currentLocation = "home";
-        } else {
-            data.currentLocation = migratedLocation;
+        if (
+            !locations[locationId] ||
+            locations[locationId].city !== cityId
+        ) {
+            locationId = cities[cityId].startLocation;
         }
 
-        if (!cities[data.currentCity]) {
-            data.currentCity = "lagos";
-        }
+        game.cash = Math.max(0, data.cash);
+        game.energy = Math.max(0, Math.min(100, data.energy));
+        game.reputation = Math.max(0, Number(data.reputation) || 0);
+        game.xp = Math.max(0, Number(data.xp) || 0);
+        game.japaFund = Math.max(0, Number(data.japaFund) || 0);
+        game.day = Math.max(1, Math.floor(Number(data.day) || 1));
+        game.currentCity = cityId;
+        game.currentLocation = locationId;
 
-        // Restore only recognised numeric values.
-        for (const key of [
-            "cash", "energy", "reputation",
-            "xp", "japaFund", "day"
-        ]) {
-            if (Number.isFinite(data[key])) {
-                game[key] = Math.max(0, data[key]);
-            }
-        }
-
-        game.energy = Math.min(100, game.energy);
-        game.day = Math.max(1, Math.floor(game.day));
-
-        game.currentCity = data.currentCity;
-        game.currentLocation = data.currentLocation;
-
-        // Ignore malformed mission entries.
         game.missions = data.missions
             .filter(mission =>
                 mission &&
@@ -117,19 +96,19 @@ function loadGame() {
                 Number.isFinite(mission.xp) &&
                 Number.isFinite(mission.reputation)
             )
-            .map(mission => ({ ...mission }));
+            .map(mission => ({
+                ...mission,
+                city: cities[mission.city] ? mission.city : cityId,
+                locationId: locations[mission.locationId]
+                    ? mission.locationId
+                    : locationId
+            }));
 
         game.logs = data.logs
             .filter(entry => typeof entry === "string")
             .slice(0, 20);
 
-        // Keep city and neighbourhood consistent.
-        if (locations[game.currentLocation].city !== game.currentCity) {
-            game.currentCity = locations[game.currentLocation].city;
-        }
-
         return true;
-
     } catch (error) {
         console.error("Could not load saved game:", error);
         return false;
@@ -148,7 +127,9 @@ const cities = {
         description: "Bigger dreams, same Naija spirit.",
         status: "🚌 Traffic: Moderate",
         mapTitle: "Lagos City Map",
-        startLocation: "home"
+        startLocation: "home",
+        image: "lagos.jpg",
+        themeColor: "#101815"
     },
 
     abuja: {
@@ -158,7 +139,9 @@ const cities = {
         description: "Think bigger. Build your future.",
         status: "🏢 The city of opportunity",
         mapTitle: "Abuja City Map",
-        startLocation: "abuja-home"
+        startLocation: "abuja-home",
+        image: "abuja.jpg",
+        themeColor: "#111b18"
     },
 
     ibadan: {
@@ -168,7 +151,9 @@ const cities = {
         description: "Slow beginnings. Big possibilities.",
         status: "🤝 Community and enterprise",
         mapTitle: "Ibadan City Map",
-        startLocation: "ibadan-home"
+        startLocation: "ibadan-home",
+        image: "ibadan.jpg",
+        themeColor: "#211613"
     },
 
     "port-harcourt": {
@@ -178,7 +163,9 @@ const cities = {
         description: "Find your lane. Make your move.",
         status: "🌧️ Tropical atmosphere",
         mapTitle: "Port Harcourt City Map",
-        startLocation: "ph-home"
+        startLocation: "ph-home",
+        image: "port-harcourt.jpg",
+        themeColor: "#0c1b21"
     },
 
     "benin-city": {
@@ -188,7 +175,9 @@ const cities = {
         description: "Rooted in history. Ready for tomorrow.",
         status: "🏺 Heritage meets hustle",
         mapTitle: "Benin City Map",
-        startLocation: "benin-home"
+        startLocation: "benin-home",
+        image: "benin-city.jpg",
+        themeColor: "#201513"
     },
 
     onitsha: {
@@ -198,15 +187,19 @@ const cities = {
         description: "Business moves. Opportunities multiply.",
         status: "📦 Trading district",
         mapTitle: "Onitsha City Map",
-        startLocation: "onitsha-home"
+        startLocation: "onitsha-home",
+        image: "onitsha.jpg",
+        themeColor: "#171912"
     }
 };
 
 /* ==========================================
-   3. LOCATIONS, NPCS & JOBS
-
-   All rewards are fictional in-game currency.
+   3. LOCATIONS, JOBS & REWARDS
    ========================================== */
+
+function makeJob(title, reward, energy, xp, reputation) {
+    return { title, reward, energy, xp, reputation };
+}
 
 const locations = {
     /* LAGOS */
@@ -227,20 +220,8 @@ const locations = {
         description: "A busy trading area full of sourcing and selling opportunities.",
         npc: "Mama Bisi",
         jobs: [
-            {
-                title: "Source 5 items for a trader",
-                reward: 8500,
-                energy: 18,
-                xp: 25,
-                reputation: 4
-            },
-            {
-                title: "Organise a stock list",
-                reward: 6000,
-                energy: 12,
-                xp: 18,
-                reputation: 3
-            }
+            makeJob("Source 5 items for a trader", 8500, 18, 25, 4),
+            makeJob("Organise a stock list", 6000, 12, 18, 3)
         ]
     },
 
@@ -251,20 +232,8 @@ const locations = {
         description: "Developers and small businesses need digital services.",
         npc: "Tunde",
         jobs: [
-            {
-                title: "Fix a business landing page",
-                reward: 14000,
-                energy: 22,
-                xp: 30,
-                reputation: 5
-            },
-            {
-                title: "Create a product listing",
-                reward: 8000,
-                energy: 15,
-                xp: 20,
-                reputation: 3
-            }
+            makeJob("Fix a business landing page", 14000, 22, 30, 5),
+            makeJob("Create a product listing", 8000, 15, 20, 3)
         ]
     },
 
@@ -275,20 +244,8 @@ const locations = {
         description: "Drivers, dispatch riders and logistics clients exchange jobs here.",
         npc: "Emeka",
         jobs: [
-            {
-                title: "Deliver a document across town",
-                reward: 7500,
-                energy: 18,
-                xp: 25,
-                reputation: 4
-            },
-            {
-                title: "Move a small parcel",
-                reward: 9500,
-                energy: 20,
-                xp: 28,
-                reputation: 4
-            }
+            makeJob("Deliver a document across town", 7500, 18, 25, 4),
+            makeJob("Move a small parcel", 9500, 20, 28, 4)
         ]
     },
 
@@ -299,20 +256,8 @@ const locations = {
         description: "Food vendors serve workers and occasionally need extra hands.",
         npc: "Aunty Kemi",
         jobs: [
-            {
-                title: "Help with a lunch order",
-                reward: 6500,
-                energy: 15,
-                xp: 20,
-                reputation: 3
-            },
-            {
-                title: "Deliver catering packs",
-                reward: 9000,
-                energy: 18,
-                xp: 25,
-                reputation: 4
-            }
+            makeJob("Help with a lunch order", 6500, 15, 20, 3),
+            makeJob("Deliver catering packs", 9000, 18, 25, 4)
         ]
     },
 
@@ -323,20 +268,8 @@ const locations = {
         description: "Companies post higher-value professional contracts here.",
         npc: "Sarah",
         jobs: [
-            {
-                title: "Prepare a company proposal",
-                reward: 16000,
-                energy: 25,
-                xp: 35,
-                reputation: 6
-            },
-            {
-                title: "Organise client data",
-                reward: 12000,
-                energy: 20,
-                xp: 28,
-                reputation: 5
-            }
+            makeJob("Prepare a company proposal", 16000, 25, 35, 6),
+            makeJob("Organise client data", 12000, 20, 28, 5)
         ]
     },
 
@@ -358,20 +291,8 @@ const locations = {
         description: "Professional services, corporate contracts and ambitious projects.",
         npc: "Zainab",
         jobs: [
-            {
-                title: "Prepare a client presentation",
-                reward: 18000,
-                energy: 22,
-                xp: 35,
-                reputation: 6
-            },
-            {
-                title: "Organise a business report",
-                reward: 12500,
-                energy: 17,
-                xp: 25,
-                reputation: 4
-            }
+            makeJob("Prepare a client presentation", 18000, 22, 35, 6),
+            makeJob("Organise a business report", 12500, 17, 25, 4)
         ]
     },
 
@@ -382,20 +303,8 @@ const locations = {
         description: "Meet traders and help local businesses improve their operations.",
         npc: "Hauwa",
         jobs: [
-            {
-                title: "Update a shop inventory",
-                reward: 8000,
-                energy: 15,
-                xp: 22,
-                reputation: 3
-            },
-            {
-                title: "Arrange a customer order",
-                reward: 9500,
-                energy: 18,
-                xp: 25,
-                reputation: 4
-            }
+            makeJob("Update a shop inventory", 8000, 15, 22, 3),
+            makeJob("Arrange a customer order", 9500, 18, 25, 4)
         ]
     },
 
@@ -406,20 +315,8 @@ const locations = {
         description: "Build digital skills and meet people working on new ideas.",
         npc: "David",
         jobs: [
-            {
-                title: "Build a portfolio page",
-                reward: 15000,
-                energy: 22,
-                xp: 35,
-                reputation: 5
-            },
-            {
-                title: "Test a website on mobile",
-                reward: 9000,
-                energy: 15,
-                xp: 25,
-                reputation: 4
-            }
+            makeJob("Build a portfolio page", 15000, 22, 35, 5),
+            makeJob("Test a website on mobile", 9000, 15, 25, 4)
         ]
     },
 
@@ -429,7 +326,7 @@ const locations = {
         city: "ibadan",
         name: "Mokola Home",
         icon: "🏠",
-        description: "Start your day and plan your next move in the city of brown rooftops.",
+        description: "Start your day in the city of brown rooftops.",
         npc: null,
         jobs: []
     },
@@ -441,20 +338,8 @@ const locations = {
         description: "Help traders, organise goods and find practical work.",
         npc: "Mama Ronke",
         jobs: [
-            {
-                title: "Help a trader sort stock",
-                reward: 6500,
-                energy: 15,
-                xp: 20,
-                reputation: 4
-            },
-            {
-                title: "Record daily sales",
-                reward: 8000,
-                energy: 16,
-                xp: 24,
-                reputation: 4
-            }
+            makeJob("Help a trader sort stock", 6500, 15, 20, 4),
+            makeJob("Record daily sales", 8000, 16, 24, 4)
         ]
     },
 
@@ -462,23 +347,11 @@ const locations = {
         city: "ibadan",
         name: "Creative Workspace",
         icon: "💻",
-        description: "Local entrepreneurs need websites and help with digital tools.",
+        description: "Local entrepreneurs need websites and digital tools.",
         npc: "Femi",
         jobs: [
-            {
-                title: "Create a business flyer",
-                reward: 7000,
-                energy: 14,
-                xp: 22,
-                reputation: 3
-            },
-            {
-                title: "Set up a business webpage",
-                reward: 12000,
-                energy: 21,
-                xp: 30,
-                reputation: 5
-            }
+            makeJob("Create a business flyer", 7000, 14, 22, 3),
+            makeJob("Set up a business webpage", 12000, 21, 30, 5)
         ]
     },
 
@@ -489,20 +362,8 @@ const locations = {
         description: "A busy connection point for commuters and local deliveries.",
         npc: "Bayo",
         jobs: [
-            {
-                title: "Coordinate a local delivery",
-                reward: 7000,
-                energy: 16,
-                xp: 22,
-                reputation: 4
-            },
-            {
-                title: "Record parcel dispatches",
-                reward: 8500,
-                energy: 18,
-                xp: 25,
-                reputation: 4
-            }
+            makeJob("Coordinate a local delivery", 7000, 16, 22, 4),
+            makeJob("Record parcel dispatches", 8500, 18, 25, 4)
         ]
     },
 
@@ -512,7 +373,7 @@ const locations = {
         city: "port-harcourt",
         name: "GRA Residence",
         icon: "🏠",
-        description: "Plan your day in the Garden City and prepare for new work.",
+        description: "Plan your day in the Garden City.",
         npc: null,
         jobs: []
     },
@@ -524,20 +385,8 @@ const locations = {
         description: "Explore professional services and business support opportunities.",
         npc: "Amaka",
         jobs: [
-            {
-                title: "Prepare an operations report",
-                reward: 15000,
-                energy: 22,
-                xp: 32,
-                reputation: 5
-            },
-            {
-                title: "Organise customer records",
-                reward: 10500,
-                energy: 18,
-                xp: 26,
-                reputation: 4
-            }
+            makeJob("Prepare an operations report", 15000, 22, 32, 5),
+            makeJob("Organise customer records", 10500, 18, 26, 4)
         ]
     },
 
@@ -548,20 +397,8 @@ const locations = {
         description: "Support traders with stock, sales and customer orders.",
         npc: "Chika",
         jobs: [
-            {
-                title: "Record market sales",
-                reward: 7500,
-                energy: 15,
-                xp: 22,
-                reputation: 3
-            },
-            {
-                title: "Arrange a wholesale order",
-                reward: 11000,
-                energy: 19,
-                xp: 28,
-                reputation: 4
-            }
+            makeJob("Record market sales", 7500, 15, 22, 3),
+            makeJob("Arrange a wholesale order", 11000, 19, 28, 4)
         ]
     },
 
@@ -572,20 +409,8 @@ const locations = {
         description: "Help coordinate parcel movement and logistics tasks.",
         npc: "Tamuno",
         jobs: [
-            {
-                title: "Track a parcel delivery",
-                reward: 8500,
-                energy: 17,
-                xp: 24,
-                reputation: 4
-            },
-            {
-                title: "Prepare a dispatch schedule",
-                reward: 11500,
-                energy: 20,
-                xp: 29,
-                reputation: 5
-            }
+            makeJob("Track a parcel delivery", 8500, 17, 24, 4),
+            makeJob("Prepare a dispatch schedule", 11500, 20, 29, 5)
         ]
     },
 
@@ -607,20 +432,8 @@ const locations = {
         description: "Work with merchants and find opportunities in local trade.",
         npc: "Osas",
         jobs: [
-            {
-                title: "Update a merchant's stock list",
-                reward: 7000,
-                energy: 15,
-                xp: 22,
-                reputation: 3
-            },
-            {
-                title: "Prepare customer orders",
-                reward: 9000,
-                energy: 17,
-                xp: 25,
-                reputation: 4
-            }
+            makeJob("Update a merchant's stock list", 7000, 15, 22, 3),
+            makeJob("Prepare customer orders", 9000, 17, 25, 4)
         ]
     },
 
@@ -631,20 +444,8 @@ const locations = {
         description: "Help growing businesses establish their digital presence.",
         npc: "Efe",
         jobs: [
-            {
-                title: "Design a business homepage",
-                reward: 12500,
-                energy: 21,
-                xp: 30,
-                reputation: 5
-            },
-            {
-                title: "Create an online product catalogue",
-                reward: 10000,
-                energy: 18,
-                xp: 27,
-                reputation: 4
-            }
+            makeJob("Design a business homepage", 12500, 21, 30, 5),
+            makeJob("Create an online product catalogue", 10000, 18, 27, 4)
         ]
     },
 
@@ -652,23 +453,11 @@ const locations = {
         city: "benin-city",
         name: "Commercial District",
         icon: "🏢",
-        description: "Help businesses organise their records and serve customers.",
+        description: "Help businesses organise records and serve customers.",
         npc: "Osayande",
         jobs: [
-            {
-                title: "Organise a customer database",
-                reward: 11000,
-                energy: 19,
-                xp: 28,
-                reputation: 4
-            },
-            {
-                title: "Prepare a sales summary",
-                reward: 9500,
-                energy: 17,
-                xp: 25,
-                reputation: 4
-            }
+            makeJob("Organise a customer database", 11000, 19, 28, 4),
+            makeJob("Prepare a sales summary", 9500, 17, 25, 4)
         ]
     },
 
@@ -690,20 +479,8 @@ const locations = {
         description: "A commercial powerhouse full of stock, sales and merchant tasks.",
         npc: "Mr. Okeke",
         jobs: [
-            {
-                title: "Prepare a stock inventory",
-                reward: 9000,
-                energy: 17,
-                xp: 25,
-                reputation: 4
-            },
-            {
-                title: "Coordinate a customer order",
-                reward: 11500,
-                energy: 20,
-                xp: 29,
-                reputation: 5
-            }
+            makeJob("Prepare a stock inventory", 9000, 17, 25, 4),
+            makeJob("Coordinate a customer order", 11500, 20, 29, 5)
         ]
     },
 
@@ -714,20 +491,8 @@ const locations = {
         description: "Help coordinate goods moving between customers and traders.",
         npc: "Chinedu",
         jobs: [
-            {
-                title: "Prepare a dispatch record",
-                reward: 8500,
-                energy: 17,
-                xp: 24,
-                reputation: 4
-            },
-            {
-                title: "Coordinate a parcel movement",
-                reward: 12000,
-                energy: 21,
-                xp: 30,
-                reputation: 5
-            }
+            makeJob("Prepare a dispatch record", 8500, 17, 24, 4),
+            makeJob("Coordinate a parcel movement", 12000, 21, 30, 5)
         ]
     },
 
@@ -738,20 +503,8 @@ const locations = {
         description: "Help traders use websites and digital tools to reach more customers.",
         npc: "Adaeze",
         jobs: [
-            {
-                title: "Create a product catalogue",
-                reward: 11000,
-                energy: 19,
-                xp: 28,
-                reputation: 4
-            },
-            {
-                title: "Set up a business webpage",
-                reward: 14500,
-                energy: 23,
-                xp: 33,
-                reputation: 5
-            }
+            makeJob("Create a product catalogue", 11000, 19, 28, 4),
+            makeJob("Set up a business webpage", 14500, 23, 33, 5)
         ]
     }
 };
@@ -766,116 +519,97 @@ const npcs = {
         role: "Trader",
         text: "I need reliable people who can source items quickly."
     },
-
-    "Tunde": {
+    Tunde: {
         icon: "🧑🏾‍💻",
         role: "Developer",
         text: "Small businesses need digital help every day."
     },
-
-    "Emeka": {
+    Emeka: {
         icon: "🧑🏾",
         role: "Logistics",
         text: "If you are dependable, there is always a delivery."
     },
-
     "Aunty Kemi": {
         icon: "👩🏾‍🍳",
         role: "Food vendor",
         text: "Good service brings repeat customers."
     },
-
-    "Sarah": {
+    Sarah: {
         icon: "👩🏾‍💼",
         role: "Business consultant",
         text: "Professional clients pay more, but they expect quality."
     },
-
-    "Zainab": {
+    Zainab: {
         icon: "👩🏾‍💼",
         role: "Business analyst",
         text: "Good preparation makes a professional stand out."
     },
-
-    "Hauwa": {
+    Hauwa: {
         icon: "👩🏾‍🦱",
         role: "Market trader",
         text: "Accurate stock records help a business grow."
     },
-
-    "David": {
+    David: {
         icon: "🧑🏾‍💻",
         role: "Tech founder",
         text: "A good portfolio can open doors to better projects."
     },
-
     "Mama Ronke": {
         icon: "👩🏾‍🦱",
         role: "Trader",
         text: "Every business needs someone who can be trusted."
     },
-
-    "Femi": {
+    Femi: {
         icon: "🧑🏾‍🎨",
         role: "Digital creative",
         text: "Local businesses need better ways to reach customers."
     },
-
-    "Bayo": {
+    Bayo: {
         icon: "🧑🏾",
         role: "Transport coordinator",
         text: "Planning ahead makes deliveries run more smoothly."
     },
-
-    "Amaka": {
+    Amaka: {
         icon: "👩🏾‍💼",
         role: "Operations specialist",
         text: "Good records make difficult work easier."
     },
-
-    "Chika": {
+    Chika: {
         icon: "👩🏾‍🦱",
         role: "Market trader",
         text: "Customers remember businesses that serve them well."
     },
-
-    "Tamuno": {
+    Tamuno: {
         icon: "🧑🏾",
         role: "Logistics coordinator",
         text: "Reliable updates help customers trust a delivery service."
     },
-
-    "Osas": {
+    Osas: {
         icon: "🧑🏾",
         role: "Merchant",
         text: "Organised stock helps me serve customers faster."
     },
-
-    "Efe": {
+    Efe: {
         icon: "🧑🏾‍💻",
         role: "Web designer",
         text: "Digital skills can help small businesses grow."
     },
-
-    "Osayande": {
+    Osayande: {
         icon: "🧑🏾‍💼",
         role: "Business manager",
         text: "A clear sales report helps us make better decisions."
     },
-
     "Mr. Okeke": {
         icon: "🧑🏾",
         role: "Wholesaler",
         text: "Trade moves faster when everyone knows what is in stock."
     },
-
-    "Chinedu": {
+    Chinedu: {
         icon: "🧑🏾",
         role: "Dispatch coordinator",
         text: "Every parcel needs the right record and destination."
     },
-
-    "Adaeze": {
+    Adaeze: {
         icon: "👩🏾‍💻",
         role: "Digital consultant",
         text: "Let's help more local businesses get online."
@@ -883,7 +617,7 @@ const npcs = {
 };
 
 /* ==========================================
-   5. HELPERS
+   5. GENERAL HELPERS
    ========================================== */
 
 function money(amount) {
@@ -912,9 +646,9 @@ function log(message) {
 function showMessage(message) {
     const element = document.getElementById("message");
 
-    if (!element) return;
-
-    element.textContent = message;
+    if (element) {
+        element.textContent = message;
+    }
 }
 
 function spendEnergy(amount) {
@@ -927,8 +661,12 @@ function spendEnergy(amount) {
     return true;
 }
 
+function getElement(id) {
+    return document.getElementById(id);
+}
+
 /* ==========================================
-   6. CITY THEMING
+   6. CITY THEME & HEADER
    ========================================== */
 
 function renderCityTheme() {
@@ -937,44 +675,57 @@ function renderCityTheme() {
     document.body.dataset.theme = game.currentCity;
     document.documentElement.dataset.theme = game.currentCity;
 
-    document.getElementById("cityName").textContent = city.name;
-    document.getElementById("cityIcon").textContent = city.icon;
-    document.getElementById("cityMood").textContent =
-        `${city.mood} · ${city.description}`;
+    const cityName = getElement("cityName");
+    const cityIcon = getElement("cityIcon");
+    const cityMood = getElement("cityMood");
+    const mapTitle = getElement("mapTitle");
+    const cityStatus = getElement("cityStatus");
+    const locationText = getElement("locationText");
 
-    document.getElementById("mapTitle").textContent = city.mapTitle;
-    document.getElementById("cityStatus").textContent = city.status;
+    if (cityName) cityName.textContent = city.name;
+    if (cityIcon) cityIcon.textContent = city.icon;
 
-    const themeColors = {
-        lagos: "#101815",
-        abuja: "#111b18",
-        ibadan: "#211613",
-        "port-harcourt": "#0c1b21",
-        "benin-city": "#201513",
-        onitsha: "#171912"
-    };
+    if (cityMood) {
+        cityMood.textContent = `${city.mood} · ${city.description}`;
+    }
+
+    if (mapTitle) mapTitle.textContent = city.mapTitle;
+    if (cityStatus) cityStatus.textContent = city.status;
+
+    if (locationText) {
+        locationText.textContent =
+            `You are at ${currentLocation().name}, ${city.name}.`;
+    }
 
     const metaTheme = document.querySelector('meta[name="theme-color"]');
 
     if (metaTheme) {
-        metaTheme.content = themeColors[game.currentCity] || themeColors.lagos;
+        metaTheme.content = city.themeColor;
     }
 
-    const selector = document.getElementById("citySelector");
+    const selector = getElement("citySelector");
 
     if (selector) {
         selector.value = game.currentCity;
     }
 }
 
+/* ==========================================
+   7. CITY DROPDOWN
+   ========================================== */
+
 function setupCitySelector() {
     const identity = document.querySelector(".city-identity");
 
-    if (!identity || document.getElementById("citySelector")) return;
+    if (!identity || getElement("citySelector")) return;
 
     const wrapper = document.createElement("label");
     wrapper.className = "city-selector-wrap";
     wrapper.htmlFor = "citySelector";
+
+    const label = document.createElement("span");
+    label.className = "eyebrow";
+    label.textContent = "TRAVEL TO";
 
     const select = document.createElement("select");
     select.id = "citySelector";
@@ -987,10 +738,6 @@ function setupCitySelector() {
         select.appendChild(option);
     });
 
-    const label = document.createElement("span");
-    label.className = "eyebrow";
-    label.textContent = "TRAVEL TO";
-
     wrapper.append(label, select);
     identity.appendChild(wrapper);
 
@@ -1001,11 +748,96 @@ function setupCitySelector() {
     });
 }
 
+/* ==========================================
+   8. CLICKABLE CITY CARDS
+   ========================================== */
+
+function renderCityCards() {
+    const container = getElement("cityCards");
+
+    // This allows the script to work even if the cards
+    // section has not yet been added to the HTML.
+    if (!container) return;
+
+    container.replaceChildren();
+
+    Object.entries(cities).forEach(([id, city]) => {
+        const isCurrent = game.currentCity === id;
+
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "city-card";
+
+        if (isCurrent) {
+            card.classList.add("active");
+        }
+
+        card.setAttribute(
+            "aria-label",
+            isCurrent ? `${city.name}, current city` : `Travel to ${city.name}`
+        );
+
+        card.setAttribute("aria-pressed", String(isCurrent));
+
+        // The images must exist in images/cities/.
+        card.style.setProperty(
+            "--city-image",
+            `url("images/cities/${city.image}")`
+        );
+
+        const top = document.createElement("div");
+        top.className = "city-card-top";
+
+        const icon = document.createElement("span");
+        icon.className = "city-card-icon";
+        icon.textContent = city.icon;
+
+        const badge = document.createElement("span");
+        badge.className = "city-card-badge";
+        badge.textContent = isCurrent ? "CURRENT CITY" : "EXPLORE";
+
+        top.append(icon, badge);
+
+        const content = document.createElement("div");
+        content.className = "city-card-content";
+
+        const heading = document.createElement("h3");
+        heading.textContent = city.name;
+
+        const description = document.createElement("p");
+        description.textContent = `${city.mood} · ${city.description}`;
+
+        const action = document.createElement("span");
+        action.className = "city-card-action";
+        action.textContent = isCurrent ? "You're here ✓" : "Travel here →";
+
+        content.append(heading, description, action);
+        card.append(top, content);
+
+        card.addEventListener("click", () => {
+            if (game.currentCity !== id) {
+                travelToCity(id);
+            }
+        });
+
+        container.appendChild(card);
+    });
+}
+
+/* ==========================================
+   9. TRAVEL BETWEEN CITIES
+   ========================================== */
+
 function travelToCity(cityId) {
     if (!cities[cityId] || cityId === game.currentCity) return;
 
     if (!spendEnergy(10)) {
-        document.getElementById("citySelector").value = game.currentCity;
+        const selector = getElement("citySelector");
+
+        if (selector) {
+            selector.value = game.currentCity;
+        }
+
         return;
     }
 
@@ -1023,12 +855,15 @@ function travelToCity(cityId) {
 }
 
 /* ==========================================
-   7. CITY MAP
+   10. CITY MAP
    ========================================== */
 
 function renderMap() {
-    const map = document.getElementById("cityMap");
-    map.innerHTML = "";
+    const map = getElement("cityMap");
+
+    if (!map) return;
+
+    map.replaceChildren();
 
     cityLocations().forEach(([id, location]) => {
         const button = document.createElement("button");
@@ -1041,14 +876,20 @@ function renderMap() {
             button.setAttribute("aria-current", "location");
         }
 
-        button.innerHTML = `
-            <span class="place-icon">${location.icon}</span>
-            <span class="place-name">${location.name}</span>
-            <span class="place-small">
-                ${game.currentLocation === id ? "YOU ARE HERE" : "Explore"}
-            </span>
-        `;
+        const icon = document.createElement("span");
+        icon.className = "place-icon";
+        icon.textContent = location.icon;
 
+        const name = document.createElement("span");
+        name.className = "place-name";
+        name.textContent = location.name;
+
+        const small = document.createElement("span");
+        small.className = "place-small";
+        small.textContent =
+            game.currentLocation === id ? "YOU ARE HERE" : "Explore";
+
+        button.append(icon, name, small);
         button.addEventListener("click", () => travelTo(id));
 
         map.appendChild(button);
@@ -1056,7 +897,7 @@ function renderMap() {
 }
 
 /* ==========================================
-   8. TRAVEL BETWEEN NEIGHBOURHOODS
+   11. TRAVEL BETWEEN NEIGHBOURHOODS
    ========================================== */
 
 function travelTo(locationId) {
@@ -1078,123 +919,180 @@ function travelTo(locationId) {
 }
 
 /* ==========================================
-   9. LOCATION PANEL & AVAILABLE JOBS
+   12. LOCATION PANEL & AVAILABLE JOBS
    ========================================== */
 
 function renderLocation() {
     const location = currentLocation();
-    const panel = document.getElementById("locationPanel");
+    const panel = getElement("locationPanel");
 
-    document.getElementById("locationText").textContent =
-        `You are at ${location.name}, ${currentCity().name}.`;
+    if (!panel) return;
 
-    panel.innerHTML = `
-        <div class="location-title">
-            ${location.icon} ${location.name}
-        </div>
-        <div class="location-description">
-            ${location.description}
-        </div>
-    `;
+    const locationText = getElement("locationText");
+
+    if (locationText) {
+        locationText.textContent =
+            `You are at ${location.name}, ${currentCity().name}.`;
+    }
+
+    panel.replaceChildren();
+
+    const title = document.createElement("div");
+    title.className = "location-title";
+    title.textContent = `${location.icon} ${location.name}`;
+
+    const description = document.createElement("div");
+    description.className = "location-description";
+    description.textContent = location.description;
+
+    panel.append(title, description);
 }
 
 function renderAvailableJobs() {
     const location = currentLocation();
-    const panel = document.getElementById("locationPanel");
+    const panel = getElement("locationPanel");
+
+    if (!panel) return;
+
+    const jobsContainer = document.createElement("div");
+    jobsContainer.className = "jobs";
 
     if (!location.jobs || location.jobs.length === 0) {
-        panel.insertAdjacentHTML("beforeend", `
-            <div class="jobs">
-                <p class="muted">No jobs available here right now. Explore another location.</p>
-            </div>
-        `);
+        const empty = document.createElement("p");
+        empty.className = "muted";
+        empty.textContent =
+            "No jobs available here right now. Explore another location.";
+
+        jobsContainer.appendChild(empty);
+        panel.appendChild(jobsContainer);
         return;
     }
 
-    const jobsHTML = location.jobs.map((job, index) => `
-        <div class="mission">
-            <div>
-                <div class="mission-title">${job.title}</div>
-                <div class="mission-details">
-                    Reward: ${money(job.reward)}
-                    · Energy: ${job.energy}
-                    · XP: ${job.xp}
-                </div>
-            </div>
-            <button class="mission-button" data-job-index="${index}">
-                Accept
-            </button>
-        </div>
-    `).join("");
+    const heading = document.createElement("h3");
+    heading.textContent = "Available Jobs";
+    jobsContainer.appendChild(heading);
 
-    panel.insertAdjacentHTML("beforeend", `
-        <div class="jobs">
-            <h3>Available Jobs</h3>
-            ${jobsHTML}
-        </div>
-    `);
+    location.jobs.forEach((job, index) => {
+        const row = document.createElement("div");
+        row.className = "mission";
 
-    panel.querySelectorAll("[data-job-index]").forEach(button => {
-        button.addEventListener("click", () => {
-            acceptMission(Number(button.dataset.jobIndex));
-        });
+        const details = document.createElement("div");
+
+        const title = document.createElement("div");
+        title.className = "mission-title";
+        title.textContent = job.title;
+
+        const info = document.createElement("div");
+        info.className = "mission-details";
+        info.textContent =
+            `Reward: ${money(job.reward)} · Energy: ${job.energy} · XP: ${job.xp}`;
+
+        details.append(title, info);
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "mission-button";
+        button.textContent = "Accept";
+
+        button.addEventListener("click", () => acceptMission(index));
+
+        row.append(details, button);
+        jobsContainer.appendChild(row);
     });
+
+    panel.appendChild(jobsContainer);
 }
 
 /* ==========================================
-   10. NPC SYSTEM
+   13. NPC SYSTEM
    ========================================== */
 
 function renderNPCs() {
     const location = currentLocation();
-    const container = document.getElementById("npcs");
-    const opportunity = document.getElementById("opportunity");
+    const container = getElement("npcs");
+    const opportunity = getElement("opportunity");
+
+    if (!container || !opportunity) return;
+
+    container.replaceChildren();
+    opportunity.replaceChildren();
 
     if (!location.npc || !npcs[location.npc]) {
-        container.innerHTML = `
-            <p class="muted">Enjoy the neighbourhood. Visit another spot to meet people.</p>
-        `;
+        const message = document.createElement("p");
+        message.className = "muted";
+        message.textContent =
+            "Enjoy the neighbourhood. Visit another spot to meet people.";
 
-        opportunity.innerHTML = `
-            <p class="muted">Explore the city to discover your next opportunity.</p>
-        `;
+        container.appendChild(message);
 
+        const hint = document.createElement("p");
+        hint.className = "muted";
+        hint.textContent =
+            "Explore the city to discover your next opportunity.";
+
+        opportunity.appendChild(hint);
         return;
     }
 
     const npc = npcs[location.npc];
 
-    container.innerHTML = `
-        <div class="npc-card">
-            <div class="npc-info">
-                <div class="npc-avatar">${npc.icon}</div>
-                <div>
-                    <strong>${location.npc}</strong>
-                    <div class="npc-role">${npc.role}</div>
-                    <p>${npc.text}</p>
-                </div>
-            </div>
+    const card = document.createElement("div");
+    card.className = "npc-card";
 
-            <button id="talkButton" class="secondary-button">
-                Talk
-            </button>
-        </div>
-    `;
+    const info = document.createElement("div");
+    info.className = "npc-info";
 
-    document.getElementById("talkButton").addEventListener(
-        "click",
-        talkToNPC
+    const avatar = document.createElement("div");
+    avatar.className = "npc-avatar";
+    avatar.textContent = npc.icon;
+
+    const text = document.createElement("div");
+
+    const name = document.createElement("strong");
+    name.textContent = location.npc;
+
+    const role = document.createElement("div");
+    role.className = "npc-role";
+    role.textContent = npc.role;
+
+    const dialogue = document.createElement("p");
+    dialogue.textContent = npc.text;
+
+    text.append(name, role, dialogue);
+    info.append(avatar, text);
+
+    const talkButton = document.createElement("button");
+    talkButton.type = "button";
+    talkButton.id = "talkButton";
+    talkButton.className = "secondary-button";
+    talkButton.textContent = "Talk";
+    talkButton.addEventListener("click", talkToNPC);
+
+    card.append(info, talkButton);
+    container.appendChild(card);
+
+    const opportunityCard = document.createElement("div");
+    opportunityCard.className = "opportunity-card";
+
+    const opportunityTitle = document.createElement("strong");
+    opportunityTitle.textContent = `${npc.role} opportunity`;
+
+    const opportunityText = document.createElement("p");
+    opportunityText.className = "muted";
+    opportunityText.textContent = npc.text;
+
+    const opportunityHint = document.createElement("p");
+    opportunityHint.className = "mission-details";
+    opportunityHint.textContent =
+        "Visit the Available Jobs section to find work.";
+
+    opportunityCard.append(
+        opportunityTitle,
+        opportunityText,
+        opportunityHint
     );
 
-    opportunity.innerHTML = `
-        <div class="opportunity-card">
-            <strong>${npc.role} opportunity</strong>
-            <p class="muted">${npc.text}</p>
-            <p class="mission-details">
-                Visit the Available Jobs section to find work.
-            </p>
-        </div>
-    `;
+    opportunity.appendChild(opportunityCard);
 }
 
 function talkToNPC() {
@@ -1214,7 +1112,7 @@ function talkToNPC() {
 }
 
 /* ==========================================
-   11. ACCEPT MISSIONS
+   14. ACCEPT MISSIONS
    ========================================== */
 
 function acceptMission(index) {
@@ -1226,11 +1124,11 @@ function acceptMission(index) {
         return;
     }
 
-    // Prevent repeatedly accepting the same job while it is active.
     const alreadyAccepted = game.missions.some(
         mission =>
             mission.title === job.title &&
-            mission.locationId === game.currentLocation
+            mission.locationId === game.currentLocation &&
+            mission.city === game.currentCity
     );
 
     if (alreadyAccepted) {
@@ -1261,45 +1159,55 @@ function acceptMission(index) {
 }
 
 /* ==========================================
-   12. ACTIVE MISSIONS
+   15. ACTIVE MISSIONS
    ========================================== */
 
 function renderMissions() {
-    const container = document.getElementById("missions");
+    const container = getElement("missions");
+
+    if (!container) return;
+
+    container.replaceChildren();
 
     if (game.missions.length === 0) {
-        container.innerHTML = `
-            <p class="muted">
-                No active missions yet. Explore a location and accept a job.
-            </p>
-        `;
+        const empty = document.createElement("p");
+        empty.className = "muted";
+        empty.textContent =
+            "No active missions yet. Explore a location and accept a job.";
+
+        container.appendChild(empty);
         return;
     }
 
-    container.innerHTML = game.missions.map((mission, index) => `
-        <div class="mission">
-            <div>
-                <div class="mission-title">${mission.title}</div>
-                <div class="mission-details">
-                    ${cities[mission.city]?.name || "Nigeria"}
-                    · Reward: ${money(mission.reward)}
-                    · +${mission.reputation} reputation
-                    · +${mission.xp} XP
-                </div>
-            </div>
+    game.missions.forEach((mission, index) => {
+        const row = document.createElement("div");
+        row.className = "mission";
 
-            <button class="mission-button"
-                data-complete-index="${index}"
-                ${game.energy < mission.energy ? "disabled" : ""}>
-                Complete
-            </button>
-        </div>
-    `).join("");
+        const details = document.createElement("div");
 
-    container.querySelectorAll("[data-complete-index]").forEach(button => {
-        button.addEventListener("click", () => {
-            completeMission(Number(button.dataset.completeIndex));
-        });
+        const title = document.createElement("div");
+        title.className = "mission-title";
+        title.textContent = mission.title;
+
+        const info = document.createElement("div");
+        info.className = "mission-details";
+        info.textContent =
+            `${cities[mission.city]?.name || "Nigeria"} · ` +
+            `Reward: ${money(mission.reward)} · ` +
+            `+${mission.reputation} reputation · +${mission.xp} XP`;
+
+        details.append(title, info);
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "mission-button";
+        button.textContent = "Complete";
+        button.disabled = game.energy < mission.energy;
+
+        button.addEventListener("click", () => completeMission(index));
+
+        row.append(details, button);
+        container.appendChild(row);
     });
 }
 
@@ -1317,10 +1225,10 @@ function completeMission(index) {
     game.reputation += mission.reputation;
     game.xp += mission.xp;
 
-    // In-game savings bonus: 25% of the mission reward.
+    // 25% of each job reward goes to the Japa Fund.
     const savings = Math.round(mission.reward * 0.25);
-
     game.japaFund += savings;
+
     game.missions.splice(index, 1);
     game.day++;
 
@@ -1329,14 +1237,15 @@ function completeMission(index) {
     );
 
     showMessage(
-        `Mission complete! ${money(mission.reward)} earned; ${money(savings)} added to your Japa Fund.`
+        `Mission complete! ${money(mission.reward)} earned; ` +
+        `${money(savings)} added to your Japa Fund.`
     );
 
     render();
 }
 
 /* ==========================================
-   13. JAPA SAVINGS
+   16. JAPA SAVINGS
    ========================================== */
 
 function saveMoney() {
@@ -1358,7 +1267,7 @@ function saveMoney() {
 }
 
 /* ==========================================
-   14. REST & ENERGY
+   17. REST & ENERGY
    ========================================== */
 
 function rest() {
@@ -1380,17 +1289,27 @@ function rest() {
 }
 
 /* ==========================================
-   15. PLAYER STATS & FUND PROGRESS
+   18. PLAYER STATS & FUND PROGRESS
    ========================================== */
 
 function renderStats() {
-    document.getElementById("cash").textContent = money(game.cash);
-    document.getElementById("energy").textContent = game.energy;
-    document.getElementById("reputation").textContent = game.reputation;
-    document.getElementById("xp").textContent = game.xp;
-    document.getElementById("japaFund").textContent = money(game.japaFund);
-    document.getElementById("day").textContent = game.day;
-    document.getElementById("fundAmount").textContent = money(game.japaFund);
+    const values = {
+        cash: money(game.cash),
+        energy: game.energy,
+        reputation: game.reputation,
+        xp: game.xp,
+        japaFund: money(game.japaFund),
+        day: game.day,
+        fundAmount: money(game.japaFund)
+    };
+
+    Object.entries(values).forEach(([id, value]) => {
+        const element = getElement(id);
+
+        if (element) {
+            element.textContent = value;
+        }
+    });
 
     const progress = Math.min(
         100,
@@ -1398,33 +1317,43 @@ function renderStats() {
     );
 
     const progressBar = document.querySelector(".progress-bar");
-    const progressFill = document.getElementById("fundProgress");
+    const progressFill = getElement("fundProgress");
 
-    progressFill.style.width = `${progress}%`;
+    if (progressFill) {
+        progressFill.style.width = `${progress}%`;
+    }
 
     if (progressBar) {
-        progressBar.setAttribute("aria-valuenow", String(
-            Math.min(FUND_TARGET, game.japaFund)
-        ));
+        progressBar.setAttribute(
+            "aria-valuenow",
+            String(Math.min(FUND_TARGET, game.japaFund))
+        );
+
         progressBar.setAttribute("aria-valuemax", String(FUND_TARGET));
+        progressBar.setAttribute("aria-valuemin", "0");
     }
 }
 
 /* ==========================================
-   16. JOURNEY LOG
+   19. JOURNEY LOG
    ========================================== */
 
 function renderLog() {
-    const container = document.getElementById("journeyLog");
+    const container = getElement("journeyLog");
 
-    if (game.logs.length === 0) {
-        container.innerHTML = `
-            <p class="muted">Your journey starts here. Make your first move.</p>
-        `;
-        return;
-    }
+    if (!container) return;
 
     container.replaceChildren();
+
+    if (game.logs.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "muted";
+        empty.textContent =
+            "Your journey starts here. Make your first move.";
+
+        container.appendChild(empty);
+        return;
+    }
 
     game.logs.forEach(entry => {
         const element = document.createElement("div");
@@ -1435,11 +1364,16 @@ function renderLog() {
 }
 
 /* ==========================================
-   17. MAIN RENDER
+   20. MAIN RENDER
    ========================================== */
 
 function render() {
     renderCityTheme();
+
+    // Update the clickable city cards every time
+    // the player changes city or game state.
+    renderCityCards();
+
     renderStats();
     renderMap();
     renderLocation();
@@ -1448,30 +1382,38 @@ function render() {
     renderMissions();
     renderLog();
 
-    // Autosave quietly. Do not overwrite the player's message.
+    // Quiet autosave preserves the current message.
     saveGame();
 }
 
 /* ==========================================
-   18. BUTTONS & STARTUP
+   21. BUTTONS & STARTUP
    ========================================== */
 
-document.getElementById("saveButton").addEventListener(
-    "click",
-    saveMoney
-);
+function initialiseGame() {
+    const saveButton = getElement("saveButton");
+    const restButton = getElement("restButton");
 
-document.getElementById("restButton").addEventListener(
-    "click",
-    rest
-);
+    if (saveButton) {
+        saveButton.addEventListener("click", saveMoney);
+    }
 
-// Restore saved progress before showing the game.
-const hasSave = loadGame();
+    if (restButton) {
+        restButton.addEventListener("click", rest);
+    }
 
-if (!hasSave) {
-    log("You arrived in Lagos with ₦25,000. Your Japa story begins.");
+    const hasSave = loadGame();
+
+    if (!hasSave) {
+        log("You arrived in Lagos with ₦25,000. Your Japa story begins.");
+    }
+
+    setupCitySelector();
+    render();
 }
 
-setupCitySelector();
-render();
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initialiseGame);
+} else {
+    initialiseGame();
+}
