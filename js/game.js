@@ -953,7 +953,7 @@ function travelTo(locationId) {
     if (!spendEnergy(5)) return;
 
     game.currentLocation = locationId;
-    game.day++;
+advanceDay();
 
     log(`Travelled to ${destination.name} in ${currentCity().name}.`);
 
@@ -1274,7 +1274,7 @@ function completeMission(index) {
     game.japaFund += savings;
 
     game.missions.splice(index, 1);
-    game.day++;
+advanceDay();
 
     log(
         `Completed "${mission.title}". Earned ${money(mission.reward)} and added ${money(savings)} to the Japa Fund.`
