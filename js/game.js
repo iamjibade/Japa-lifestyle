@@ -885,9 +885,9 @@ function travelToCity(cityId) {
         return;
     }
 
-    game.currentCity = cityId;
-    game.currentLocation = cities[cityId].startLocation;
-    game.day++;
+   game.currentCity = cityId;
+game.currentLocation = cities[cityId].startLocation;
+advanceDay();
 
     log(`Travelled to ${cities[cityId].name}.`);
 
