@@ -19,6 +19,7 @@ const game = {
     reputation: 0,
     xp: 0,
     japaFund: 0,
+    totalExpensesPaid: 0,
     day: 1,
     currentCity: "lagos",
     currentLocation: "home",
@@ -83,6 +84,7 @@ function loadGame() {
         game.reputation = Math.max(0, Number(data.reputation) || 0);
         game.xp = Math.max(0, Number(data.xp) || 0);
         game.japaFund = Math.max(0, Number(data.japaFund) || 0);
+       game.totalExpensesPaid = Math.max(0, Number(data.totalExpensesPaid) || 0);
         game.day = Math.max(1, Math.floor(Number(data.day) || 1));
         game.currentCity = cityId;
         game.currentLocation = locationId;
