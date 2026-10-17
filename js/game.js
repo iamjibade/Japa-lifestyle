@@ -1323,7 +1323,7 @@ function rest() {
     const recovered = Math.min(45, 100 - game.energy);
 
     game.energy += recovered;
-    game.day++;
+advanceDay();
 
     log(`Rested and recovered ${recovered} energy.`);
 
