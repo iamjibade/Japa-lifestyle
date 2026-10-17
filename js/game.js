@@ -661,6 +661,48 @@ function spendEnergy(amount) {
 
     game.energy -= amount;
     return true;
+   const DAILY_EXPENSES = {
+    food: 1000,
+    transport: 500,
+    accommodation: 1000
+};
+
+function getDailyExpenses() {
+    return Object.values(DAILY_EXPENSES).reduce(
+        (total, amount) => total + amount,
+        0
+    );
+}
+
+function advanceDay() {
+    game.day++;
+
+    const expenses = getDailyExpenses();
+    const amountPaid = Math.min(game.cash, expenses);
+
+    game.cash -= amountPaid;
+    game.totalExpensesPaid += amountPaid;
+
+    log(
+        `Daily expenses: ${money(amountPaid)} paid ` +
+        `for food, transport and accommodation.`
+    );
+
+    if (amountPaid < expenses) {
+        log(
+            `You couldn't cover ${money(expenses - amountPaid)} ` +
+            `of today's expenses.`
+        );
+    }
+}
+
+function getPlayerLevel() {
+    return Math.floor(game.xp / 100) + 1;
+}
+
+function getLevelProgress() {
+    return game.xp % 100;
+}
 }
 
 function getElement(id) {
